@@ -149,33 +149,36 @@ class InscryptionRules:
         return state.has("Quill", self.player) and self.has_gems_and_battery(state)
 
     def has_act2_requirements(self, state: CollectionState) -> bool:
-        return state.has("Film Roll", self.player)
+        if "Act 1" in self.world.options.include_acts:
+            return state.has("Film Roll", self.player)
+        return True
 
     def has_act3_requirements(self, state: CollectionState) -> bool:
-        return self.has_act2_requirements(state) and self.has_all_epitaph_pieces(state) and \
-            self.has_camera_and_meat(state) and self.has_monocle(state)
+        if "Act 2" in self.world.options.include_acts:
+            return self.has_act2_requirements(state) and self.has_all_epitaph_pieces(state) and \
+                self.has_camera_and_meat(state) and self.has_monocle(state)
+        return self.has_act2_requirements(state)
 
     def has_epilogue_requirements(self, state: CollectionState) -> bool:
-        return self.has_act3_requirements(state) and self.has_transcendence_requirements(state)
+        if "Act 3" in self.world.options.include_acts:
+            return self.has_act3_requirements(state) and self.has_transcendence_requirements(state)
+        return self.has_act3_requirements(state)
 
     def set_all_rules(self) -> None:
         multiworld = self.world.multiworld
-        if self.world.options.goal != Goal.option_first_act:
-            multiworld.completion_condition[self.player] = self.has_epilogue_requirements
-        else:
-            multiworld.completion_condition[self.player] = self.has_act2_requirements
+        multiworld.completion_condition[self.player] = self.has_act2_requirements and self.has_act3_requirements and self.has_epilogue_requirements
         for region in multiworld.get_regions(self.player):
-            if self.world.options.goal == Goal.option_full_story_in_order:
+            if self.world.options.goal == Goal.option_acts_in_order:
                 if region.name in self.region_rules:
                     for entrance in region.entrances:
                         entrance.access_rule = self.region_rules[region.name]
             for loc in region.locations:
                 if loc.name in self.location_rules:
                     loc.access_rule = self.location_rules[loc.name]
-
-        if self.world.options.painting_checks_balancing == PaintingChecksBalancing.option_balanced:
-            self.world.get_location("Act 1 - Painting 2").access_rule = self.has_useful_act1_items
-            self.world.get_location("Act 1 - Painting 3").access_rule = self.has_useful_act1_items
-        elif self.world.options.painting_checks_balancing == PaintingChecksBalancing.option_force_filler:
-            self.world.get_location("Act 1 - Painting 2").progress_type = LocationProgressType.EXCLUDED
-            self.world.get_location("Act 1 - Painting 3").progress_type = LocationProgressType.EXCLUDED
+        if "Act 1" in self.world.options.include_acts:
+            if self.world.options.painting_checks_balancing == PaintingChecksBalancing.option_balanced:
+                self.world.get_location("Act 1 - Painting 2").access_rule = self.has_useful_act1_items
+                self.world.get_location("Act 1 - Painting 3").access_rule = self.has_useful_act1_items
+            elif self.world.options.painting_checks_balancing == PaintingChecksBalancing.option_force_filler:
+                self.world.get_location("Act 1 - Painting 2").progress_type = LocationProgressType.EXCLUDED
+                self.world.get_location("Act 1 - Painting 3").progress_type = LocationProgressType.EXCLUDED

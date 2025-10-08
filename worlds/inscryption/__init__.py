@@ -1,7 +1,7 @@
 from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing
 from .Items import act1_items, act2_items, act3_items, filler_items, base_id, InscryptionItem, ItemDict
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
-from .Regions import inscryption_regions_all, inscryption_regions_act_1
+from .Regions import inscryption_regions_all
 from typing import Dict, Any
 from . import Rules
 from BaseClasses import Region, Item, Tutorial, ItemClassification
@@ -69,7 +69,8 @@ class InscryptionWorld(World):
             self.all_items[11]["classification"] = ItemClassification.progression
 
         if self.options.painting_checks_balancing == PaintingChecksBalancing.option_force_filler \
-                and self.options.goal == Goal.option_first_act:
+                and "Act 2" not in self.options.include_acts\
+                and "Act 3" not in self.options.include_acts:
             self.all_items[3]["classification"] = ItemClassification.filler
 
         if self.options.epitaph_pieces_randomization != EpitaphPiecesRandomization.option_all_pieces:
@@ -86,17 +87,27 @@ class InscryptionWorld(World):
     def create_items(self) -> None:
         nb_items_added = 0
         useful_items = self.all_items.copy()
+        included_locations = len(self.all_locations)
 
-        if self.options.goal != Goal.option_first_act:
-            useful_items = [item for item in useful_items
-                            if not any(filler_item["name"] == item["name"] for filler_item in filler_items)]
+        useful_items = [item for item in useful_items
+                        if not any(filler_item["name"] == item["name"] for filler_item in filler_items)]
+        if "Act 2" in self.options.include_acts:
             if self.options.epitaph_pieces_randomization == EpitaphPiecesRandomization.option_all_pieces:
                 useful_items.pop(len(act1_items) + 3)
             else:
                 useful_items.pop(len(act1_items) + 2)
-        else:
+        if "Act 1" not in self.options.include_acts:
             useful_items = [item for item in useful_items
-                            if any(act1_item["name"] == item["name"] for act1_item in act1_items)]
+                            if not any(act1_item["name"] == item["name"] for act1_item in act1_items)]
+            included_locations -= len(act1_locations)
+        if "Act 2" not in self.options.include_acts:
+            useful_items = [item for item in useful_items
+                            if not any(act2_item["name"] == item["name"] for act2_item in act2_items)]
+            included_locations -= len(act2_locations)
+        if "Act 3" not in self.options.include_acts:
+            useful_items = [item for item in useful_items
+                            if not any(act3_item["name"] == item["name"] for act3_item in act3_items)]
+            included_locations -= len(act3_locations)
 
         for item in useful_items:
             for _ in range(item["count"]):
@@ -104,7 +115,7 @@ class InscryptionWorld(World):
                 self.multiworld.itempool.append(new_item)
                 nb_items_added += 1
 
-        filler_count = len(self.all_locations if self.options.goal != Goal.option_first_act else act1_locations)
+        filler_count = included_locations
         filler_count -= nb_items_added
 
         for i in range(filler_count):
@@ -114,8 +125,18 @@ class InscryptionWorld(World):
             self.multiworld.itempool.append(new_item)
 
     def create_regions(self) -> None:
-        used_regions = inscryption_regions_all if self.options.goal != Goal.option_first_act \
-            else inscryption_regions_act_1
+        used_regions = inscryption_regions_all
+
+        if "Act 1" not in self.options.include_acts:
+            del used_regions["Act 1"]
+            used_regions["Menu"].remove("Act 1")
+        if "Act 2" not in self.options.include_acts:
+            del used_regions["Act 2"]
+            used_regions["Menu"].remove("Act 2")
+        if "Act 3" not in self.options.include_acts:
+            del used_regions["Act 3"]
+            used_regions["Menu"].remove("Act 3")
+
         for region_name in used_regions.keys():
             self.multiworld.regions.append(Region(region_name, self.player, self.multiworld))
 
@@ -133,6 +154,7 @@ class InscryptionWorld(World):
         return self.options.as_dict(
             "death_link",
             "act1_death_link_behaviour",
+            "include_acts",
             "goal",
             "randomize_codes",
             "randomize_deck",
