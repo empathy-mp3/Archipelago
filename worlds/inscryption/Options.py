@@ -29,9 +29,9 @@ class IncludeActs(OptionSet):
 class Goal(Choice):
     """Defines the goal to accomplish in order to complete the randomizer.
 
-    - Acts In Order: Complete each enabled act in order. You can return to previously completed acts.
+    - Acts In Order: Complete each included act in order. You can return to previously completed acts.
 
-    - Acts Any Order: Complete each enabled act in any order. All enabled acts are available from the start."""
+    - Acts Any Order: Complete each included act in any order. All included acts are available from the start."""
     display_name = "Goal"
     option_acts_in_order = 0
     option_acts_any_order = 1
