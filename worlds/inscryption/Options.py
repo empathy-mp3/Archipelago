@@ -15,15 +15,17 @@ class Act1DeathLinkBehaviour(Choice):
     default = 0
 
 
-class IncludeActs(OptionSet):
-    """
-    Select which acts to play in the randomizer.
-    """
+class EnableAct1(DefaultOnToggle):
+    """Play Act 1 in the randomizer."""
+    display_name = "Enable Act 1"
 
-    display_name = "Include Acts"
+class EnableAct2(DefaultOnToggle):
+    """Play Act 2 in the randomizer."""
+    display_name = "Enable Act 2"
 
-    valid_keys = frozenset({"Act 1", "Act 2", "Act 3"})
-    default = frozenset({"Act 1", "Act 2", "Act 3"})
+class EnableAct3(DefaultOnToggle):
+    """Play Act 3 in the randomizer."""
+    display_name = "Enable Act 3"
 
 
 class Goal(Choice):
@@ -134,7 +136,9 @@ class PaintingChecksBalancing(Choice):
 class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     act1_death_link_behaviour: Act1DeathLinkBehaviour
-    include_acts: IncludeActs
+    enable_act_1: EnableAct1
+    enable_act_2: EnableAct2
+    enable_act_3: EnableAct3
     goal: Goal
     randomize_codes: RandomizeCodes
     randomize_deck: RandomizeDeck

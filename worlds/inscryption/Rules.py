@@ -149,18 +149,18 @@ class InscryptionRules:
         return state.has("Quill", self.player) and self.has_gems_and_battery(state)
 
     def has_act2_requirements(self, state: CollectionState) -> bool:
-        if "Act 1" in self.world.options.include_acts:
+        if self.world.options.enable_act_1:
             return state.has("Film Roll", self.player)
         return True
 
     def has_act3_requirements(self, state: CollectionState) -> bool:
-        if "Act 2" in self.world.options.include_acts:
+        if self.world.options.enable_act_2:
             return self.has_act2_requirements(state) and self.has_all_epitaph_pieces(state) and \
                 self.has_camera_and_meat(state) and self.has_monocle(state)
         return self.has_act2_requirements(state)
 
     def has_epilogue_requirements(self, state: CollectionState) -> bool:
-        if "Act 3" in self.world.options.include_acts:
+        if self.world.options.enable_act_3:
             return self.has_act3_requirements(state) and self.has_transcendence_requirements(state)
         return self.has_act3_requirements(state)
 
@@ -175,7 +175,7 @@ class InscryptionRules:
             for loc in region.locations:
                 if loc.name in self.location_rules:
                     loc.access_rule = self.location_rules[loc.name]
-        if "Act 1" in self.world.options.include_acts:
+        if self.world.options.enable_act_1:
             if self.world.options.painting_checks_balancing == PaintingChecksBalancing.option_balanced:
                 self.world.get_location("Act 1 - Painting 2").access_rule = self.has_useful_act1_items
                 self.world.get_location("Act 1 - Painting 3").access_rule = self.has_useful_act1_items

@@ -69,8 +69,8 @@ class InscryptionWorld(World):
             self.all_items[11]["classification"] = ItemClassification.progression
 
         if self.options.painting_checks_balancing == PaintingChecksBalancing.option_force_filler \
-                and "Act 2" not in self.options.include_acts\
-                and "Act 3" not in self.options.include_acts:
+                and not self.options.enable_act_2\
+                and not self.options.enable_act_3:
             self.all_items[3]["classification"] = ItemClassification.filler
 
         if self.options.epitaph_pieces_randomization != EpitaphPiecesRandomization.option_all_pieces:
@@ -91,20 +91,20 @@ class InscryptionWorld(World):
 
         useful_items = [item for item in useful_items
                         if not any(filler_item["name"] == item["name"] for filler_item in filler_items)]
-        if "Act 2" in self.options.include_acts:
+        if self.options.enable_act_2:
             if self.options.epitaph_pieces_randomization == EpitaphPiecesRandomization.option_all_pieces:
                 useful_items.pop(len(act1_items) + 3)
             else:
                 useful_items.pop(len(act1_items) + 2)
-        if "Act 1" not in self.options.include_acts:
+        if not self.options.enable_act_1:
             useful_items = [item for item in useful_items
                             if not any(act1_item["name"] == item["name"] for act1_item in act1_items)]
             included_locations -= len(act1_locations)
-        if "Act 2" not in self.options.include_acts:
+        if not self.options.enable_act_2:
             useful_items = [item for item in useful_items
                             if not any(act2_item["name"] == item["name"] for act2_item in act2_items)]
             included_locations -= len(act2_locations)
-        if "Act 3" not in self.options.include_acts:
+        if not self.options.enable_act_3:
             useful_items = [item for item in useful_items
                             if not any(act3_item["name"] == item["name"] for act3_item in act3_items)]
             included_locations -= len(act3_locations)
@@ -127,13 +127,13 @@ class InscryptionWorld(World):
     def create_regions(self) -> None:
         used_regions = inscryption_regions_all
 
-        if "Act 1" not in self.options.include_acts:
+        if not self.options.enable_act_1:
             del used_regions["Act 1"]
             used_regions["Menu"].remove("Act 1")
-        if "Act 2" not in self.options.include_acts:
+        if not self.options.enable_act_2:
             del used_regions["Act 2"]
             used_regions["Menu"].remove("Act 2")
-        if "Act 3" not in self.options.include_acts:
+        if not self.options.enable_act_3:
             del used_regions["Act 3"]
             used_regions["Menu"].remove("Act 3")
 
@@ -154,7 +154,9 @@ class InscryptionWorld(World):
         return self.options.as_dict(
             "death_link",
             "act1_death_link_behaviour",
-            "include_acts",
+            "enable_act_1",
+            "enable_act_2",
+            "enable_act_3",
             "goal",
             "randomize_codes",
             "randomize_deck",
