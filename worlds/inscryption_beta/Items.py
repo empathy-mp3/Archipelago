@@ -8,7 +8,7 @@ base_id = 147000
 
 
 class InscryptionItem(Item):
-    name: str = "Inscryption"
+    name: str = "Inscryption Beta"
 
 
 class ItemDict(TypedDict):

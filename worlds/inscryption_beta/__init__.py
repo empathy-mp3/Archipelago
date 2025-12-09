@@ -40,7 +40,7 @@ class InscryptionWorld(World):
     escape-room style puzzles, and psychological horror into a blood-laced smoothie.
     Darker still are the secrets inscrybed upon the cards...
     """
-    game = "Inscryption"
+    game = "Inscryption Beta"
     web = InscrypWeb()
     options_dataclass = InscryptionOptions
     options: InscryptionOptions

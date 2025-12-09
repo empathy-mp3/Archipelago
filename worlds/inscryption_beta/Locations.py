@@ -6,7 +6,7 @@ base_id = 147000
 
 
 class InscryptionLocation(Location):
-    game: str = "Inscryption"
+    game: str = "Inscryption Beta"
 
 
 act1_locations = [
