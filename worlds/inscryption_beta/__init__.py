@@ -1,5 +1,5 @@
-from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing
-from .Items import act1_items, act2_items, act3_items, filler_items, base_id, InscryptionItem, ItemDict
+from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer
+from .Items import act1_items, act2_items, act3_items, act2_3_items, filler_items, base_id, InscryptionItem, ItemDict
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
 from typing import Dict, Any
@@ -44,7 +44,7 @@ class InscryptionWorld(World):
     web = InscrypWeb()
     options_dataclass = InscryptionOptions
     options: InscryptionOptions
-    all_items = act1_items + act2_items + act3_items + filler_items
+    all_items = act1_items + act2_items + act3_items + act2_3_items + filler_items
     item_name_to_id = {item["name"]: i + base_id for i, item in enumerate(all_items)}
     all_locations = act1_locations + act2_locations + act3_locations
     location_name_to_id = {location: i + base_id for i, location in enumerate(all_locations)}
@@ -91,6 +91,9 @@ class InscryptionWorld(World):
 
         useful_items = [item for item in useful_items
                         if not any(filler_item["name"] == item["name"] for filler_item in filler_items)]
+        if self.options.randomize_hammer != RandomizeHammer.option_randomize \
+        or not (self.options.enable_act_2 or self.options.enable_act_3):
+            useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items))
         if self.options.enable_act_2:
             if self.options.epitaph_pieces_randomization == EpitaphPiecesRandomization.option_all_pieces:
                 useful_items.pop(len(act1_items) + 3)
@@ -161,6 +164,7 @@ class InscryptionWorld(World):
             "randomize_codes",
             "randomize_deck",
             "randomize_sigils",
+            "randomize_hammer",
             "optional_death_card",
             "skip_tutorial",
             "skip_epilogue",
