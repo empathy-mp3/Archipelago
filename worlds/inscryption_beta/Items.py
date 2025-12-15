@@ -148,6 +148,12 @@ act3_items: List[ItemDict] = [
      'classification': ItemClassification.progression},
 ]
 
+act2_3_items: List[ItemDict] = [
+    {'name': "Hammer",
+     'count': 1,
+     'classification': ItemClassification.useful},
+]
+
 filler_items: List[ItemDict] = [
     {'name': "Currency",
      'count': 1,

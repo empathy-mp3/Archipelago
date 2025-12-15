@@ -77,6 +77,21 @@ class RandomizeSigils(Choice):
     default = 0
 
 
+class RandomizeHammer(Choice):
+    """Instead of starting with the hammer in Act 2 and 3, it's an item that needs to be found first.
+
+    - Vanilla: Start with the hammer, as normal.
+
+    - Randomize: The hammer needs to be found in the randomizer.
+
+    - Remove: Remove the hammer entirely."""
+    display_name = "Randomize Hammer"
+    option_vanilla = 0
+    option_randomize = 1
+    option_remove = 2
+    default = 0
+
+
 class OptionalDeathCard(Choice):
     """Add a moment after death in act 1 where you can decide to create a death card or not.
 
@@ -143,6 +158,7 @@ class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     randomize_codes: RandomizeCodes
     randomize_deck: RandomizeDeck
     randomize_sigils: RandomizeSigils
+    randomize_hammer: RandomizeHammer
     optional_death_card: OptionalDeathCard
     skip_tutorial: SkipTutorial
     skip_epilogue: SkipEpilogue
