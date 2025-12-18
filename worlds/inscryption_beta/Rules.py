@@ -84,6 +84,9 @@ class InscryptionRules:
             "Act 3 - Well": self.has_inspectometer_battery,
             "Act 3 - Gems Drone": self.has_inspectometer_battery,
             "Act 3 - Clock": self.has_gems_and_battery,  # Can be brute-forced, but the solution needs those items.
+            "Act 3 - Foul Backwater Shortcut": self.has_inspectometer_battery,
+            "Act 3 - Filthy Corpse World Shortcut": self.has_inspectometer_battery,
+            "Act 3 - Gaudy Gem Land Shortcut": self.has_gems_and_battery, 
         }
         self.region_rules = {
             "Act 2": self.has_act2_requirements,

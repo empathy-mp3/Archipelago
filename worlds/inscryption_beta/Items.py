@@ -146,6 +146,15 @@ act3_items: List[ItemDict] = [
     {'name': "Mycologists Holo Key",
      'count': 1,
      'classification': ItemClassification.progression},
+    {'name': "Foul Backwater Shortcut",
+     'count': 1,
+     'classification': ItemClassification.useful},
+    {'name': "Filthy Corpse World Shortcut",
+     'count': 1,
+     'classification': ItemClassification.useful},
+    {'name': "Gaudy Gem Land Shortcut",
+     'count': 1,
+     'classification': ItemClassification.useful},
 ]
 
 act2_3_items: List[ItemDict] = [

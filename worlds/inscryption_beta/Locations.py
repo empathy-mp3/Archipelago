@@ -115,7 +115,10 @@ act3_locations = [
     "Act 3 - Inspectometer Battery",
     "Act 3 - Gems Drone",
     "Act 3 - The Great Transcendence",
-    "Act 3 - Well"
+    "Act 3 - Well",
+    "Act 3 - Foul Backwater Shortcut",
+    "Act 3 - Filthy Corpse World Shortcut",
+    "Act 3 - Gaudy Gem Land Shortcut"
 ]
 
 regions_to_locations: Dict[str, List[str]] = {

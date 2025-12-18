@@ -31,9 +31,9 @@ class EnableAct3(DefaultOnToggle):
 class Goal(Choice):
     """Defines the goal to accomplish in order to complete the randomizer.
 
-    - Acts In Order: Complete each included act in order. You can return to previously completed acts.
+    - Acts In Order: Complete each enabled act in order. You can return to previously completed acts.
 
-    - Acts Any Order: Complete each included act in any order. All included acts are available from the start."""
+    - Acts Any Order: Complete each enabled act in any order. All enabled acts are available from the start."""
     display_name = "Goal"
     option_acts_in_order = 0
     option_acts_any_order = 1
@@ -89,6 +89,21 @@ class RandomizeHammer(Choice):
     option_vanilla = 0
     option_randomize = 1
     option_remove = 2
+    default = 0
+
+
+class RandomizeShortcuts(Choice):
+    """The 3 shortcuts opened by NPCs in Botopia can be randomized, and have locations.
+
+    - Vanilla: You open them normally by talking to the NPCs
+
+    - Randomize: There's items that open the shortcuts, and locations for talking to the NPCs.
+
+    - Open: They start open, and there's still locations for them. For a faster Act 3 experience."""
+    display_name = "Randomize Shortcuts"
+    option_vanilla = 0
+    option_randomize = 1
+    option_open = 2
     default = 0
 
 
@@ -159,6 +174,7 @@ class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     randomize_deck: RandomizeDeck
     randomize_sigils: RandomizeSigils
     randomize_hammer: RandomizeHammer
+    randomize_shortcuts: RandomizeShortcuts
     optional_death_card: OptionalDeathCard
     skip_tutorial: SkipTutorial
     skip_epilogue: SkipEpilogue

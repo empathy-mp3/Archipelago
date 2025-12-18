@@ -1,4 +1,4 @@
-from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer
+from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer, RandomizeShortcuts
 from .Items import act1_items, act2_items, act3_items, act2_3_items, filler_items, base_id, InscryptionItem, ItemDict
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
@@ -94,6 +94,13 @@ class InscryptionWorld(World):
         if self.options.randomize_hammer != RandomizeHammer.option_randomize \
         or not (self.options.enable_act_2 or self.options.enable_act_3):
             useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items))
+        if self.options.enable_act_3:
+            if self.options.randomize_shortcuts != RandomizeShortcuts.option_randomize:
+                useful_items.pop(len(act1_items) + len(act2_items) + 14)
+                useful_items.pop(len(act1_items) + len(act2_items) + 13)
+                useful_items.pop(len(act1_items) + len(act2_items) + 12)
+                if self.options.randomize_shortcuts == RandomizeShortcuts.option_vanilla:
+                    included_locations -= 3
         if self.options.enable_act_2:
             if self.options.epitaph_pieces_randomization == EpitaphPiecesRandomization.option_all_pieces:
                 useful_items.pop(len(act1_items) + 3)
@@ -139,7 +146,11 @@ class InscryptionWorld(World):
         if not self.options.enable_act_3:
             del used_regions["Act 3"]
             used_regions["Menu"].remove("Act 3")
-
+        if self.options.enable_act_3:
+            if self.options.randomize_shortcuts == RandomizeShortcuts.option_vanilla:
+                regions_to_locations["Act 3"].pop(-1)
+                regions_to_locations["Act 3"].pop(-1)
+                regions_to_locations["Act 3"].pop(-1)
         for region_name in used_regions.keys():
             self.multiworld.regions.append(Region(region_name, self.player, self.multiworld))
 
@@ -165,6 +176,7 @@ class InscryptionWorld(World):
             "randomize_deck",
             "randomize_sigils",
             "randomize_hammer",
+            "randomize_shortcuts",
             "optional_death_card",
             "skip_tutorial",
             "skip_epilogue",
