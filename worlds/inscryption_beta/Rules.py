@@ -87,6 +87,13 @@ class InscryptionRules:
             "Act 3 - Foul Backwater Shortcut": self.has_inspectometer_battery,
             "Act 3 - Filthy Corpse World Shortcut": self.has_inspectometer_battery,
             "Act 3 - Gaudy Gem Land Shortcut": self.has_gems_and_battery, 
+            "Act 3 - Foul Backwater Shortcut": self.has_inspectometer_battery,
+            "Act 3 - Filthy Corpse World Shortcut": self.has_inspectometer_battery,
+            "Act 3 - Gaudy Gem Land Shortcut": self.has_gems_and_battery, 
+            "Act 3 - Vessel Upgrade 1": self.has_inspectometer_battery,
+            "Act 3 - Vessel Upgrade 2": self.has_battery_and_quill_or_gems,
+            "Act 3 - Vessel Upgrade 3": self.has_gems_and_battery,
+            "Act 3 - Conduit Upgrade": self.has_gems_and_battery
         }
         self.region_rules = {
             "Act 2": self.has_act2_requirements,
@@ -155,6 +162,9 @@ class InscryptionRules:
         if self.world.options.enable_act_1:
             return state.has("Film Roll", self.player)
         return True
+    
+    def has_battery_and_quill_or_gems(self, state: CollectionState) -> bool:
+        return (state.has("Quill", self.player) or state.has("Gems Module", self.player)) and self.has_inspectometer_battery(state)
 
     def has_act3_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_2:

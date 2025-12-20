@@ -1,4 +1,4 @@
-from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer, RandomizeShortcuts
+from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer, RandomizeShortcuts, RandomizeVesselUpgrades
 from .Items import act1_items, act2_items, act3_items, act2_3_items, filler_items, base_id, InscryptionItem, ItemDict
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
@@ -76,6 +76,9 @@ class InscryptionWorld(World):
         if self.options.epitaph_pieces_randomization != EpitaphPiecesRandomization.option_all_pieces:
             self.all_items[len(act1_items) + 3]["count"] = self.required_epitaph_pieces_count
 
+        if self.options.randomize_vessel_upgrades != RandomizeVesselUpgrades.option_randomize:
+            self.all_items[len(act1_items) + len(act2_items) + 15]["count"] = 2
+
     def get_filler_item_name(self) -> str:
         return self.random.choice(filler_items)["name"]
 
@@ -95,6 +98,10 @@ class InscryptionWorld(World):
         or not (self.options.enable_act_2 or self.options.enable_act_3):
             useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items))
         if self.options.enable_act_3:
+            if self.options.randomize_vessel_upgrades == RandomizeVesselUpgrades.option_vanilla:
+                useful_items.pop(len(act1_items) + len(act2_items) + 16)
+                useful_items.pop(len(act1_items) + len(act2_items) + 15)
+                included_locations -= 4
             if self.options.randomize_shortcuts != RandomizeShortcuts.option_randomize:
                 useful_items.pop(len(act1_items) + len(act2_items) + 14)
                 useful_items.pop(len(act1_items) + len(act2_items) + 13)
@@ -147,10 +154,15 @@ class InscryptionWorld(World):
             del used_regions["Act 3"]
             used_regions["Menu"].remove("Act 3")
         if self.options.enable_act_3:
+            if self.options.randomize_vessel_upgrades == RandomizeVesselUpgrades.option_vanilla:
+                regions_to_locations["Act 3"].pop(37)
+                regions_to_locations["Act 3"].pop(36)
+                regions_to_locations["Act 3"].pop(35)
+                regions_to_locations["Act 3"].pop(34)
             if self.options.randomize_shortcuts == RandomizeShortcuts.option_vanilla:
-                regions_to_locations["Act 3"].pop(-1)
-                regions_to_locations["Act 3"].pop(-1)
-                regions_to_locations["Act 3"].pop(-1)
+                regions_to_locations["Act 3"].pop(33)
+                regions_to_locations["Act 3"].pop(32)
+                regions_to_locations["Act 3"].pop(31)
         for region_name in used_regions.keys():
             self.multiworld.regions.append(Region(region_name, self.player, self.multiworld))
 
@@ -177,6 +189,7 @@ class InscryptionWorld(World):
             "randomize_sigils",
             "randomize_hammer",
             "randomize_shortcuts",
+            "randomize_vessel_upgrades",
             "optional_death_card",
             "skip_tutorial",
             "skip_epilogue",

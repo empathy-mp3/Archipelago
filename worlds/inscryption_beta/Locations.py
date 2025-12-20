@@ -116,9 +116,13 @@ act3_locations = [
     "Act 3 - Gems Drone",
     "Act 3 - The Great Transcendence",
     "Act 3 - Well",
-    "Act 3 - Foul Backwater Shortcut",
-    "Act 3 - Filthy Corpse World Shortcut",
-    "Act 3 - Gaudy Gem Land Shortcut"
+    "Act 3 - Foul Backwater Shortcut", # act 1 + act 2 + 31
+    "Act 3 - Filthy Corpse World Shortcut", # act 1 + act 2 + 32
+    "Act 3 - Gaudy Gem Land Shortcut", # act 1 + act 2 + 33
+    "Act 3 - Vessel Upgrade 1", # act 1 + act 2 + 34
+    "Act 3 - Vessel Upgrade 2", # act 1 + act 2 + 35
+    "Act 3 - Vessel Upgrade 3", # act 1 + act 2 + 36
+    "Act 3 - Conduit Upgrade" # act 1 + act 2 + 37
 ]
 
 regions_to_locations: Dict[str, List[str]] = {

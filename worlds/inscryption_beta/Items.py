@@ -155,6 +155,12 @@ act3_items: List[ItemDict] = [
     {'name': "Gaudy Gem Land Shortcut",
      'count': 1,
      'classification': ItemClassification.useful},
+    {'name': "Vessel Upgrade",
+     'count': 3,
+     'classification': ItemClassification.useful},
+    {'name': "Conduit Upgrade",
+     'count': 1,
+     'classification': ItemClassification.useful},
 ]
 
 act2_3_items: List[ItemDict] = [

@@ -107,6 +107,22 @@ class RandomizeShortcuts(Choice):
     default = 0
 
 
+class RandomizeVesselUpgrades(Choice):
+    """The 3 Vessel Upgrades from Uberbots and the Conduit Upgrade can be randomized, and have locations.
+    These will give your vessels a random beneficial (but not broken) sigil, including those not in the normal options.
+
+    - Vanilla: You gain them normally, by picking them up from bosses.
+
+    - Randomize: There's items that open the shortcuts, and locations for talking to the NPCs.
+
+    - Remove One: Same as randomize, but there's one less upgrade in the pool."""
+    display_name = "Randomize Shortcuts"
+    option_vanilla = 0
+    option_randomize = 1
+    option_remove_one = 2
+    default = 0
+
+
 class OptionalDeathCard(Choice):
     """Add a moment after death in act 1 where you can decide to create a death card or not.
 
@@ -175,6 +191,7 @@ class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     randomize_sigils: RandomizeSigils
     randomize_hammer: RandomizeHammer
     randomize_shortcuts: RandomizeShortcuts
+    randomize_vessel_upgrades: RandomizeVesselUpgrades
     optional_death_card: OptionalDeathCard
     skip_tutorial: SkipTutorial
     skip_epilogue: SkipEpilogue
