@@ -77,6 +77,14 @@ class RandomizeSigils(Choice):
     default = 0
 
 
+class ExtraSigils(Toggle):
+    """Allow extra sigils to show up in Act 1 and 3.
+    These include sigils from other acts, Kaycee's Mod, or just new ones from the same act.
+    Some very strong sigils will not show up.
+    There may be an unusual lack of information given by these sigils."""
+    display_name = "Extra Sigils"
+
+
 class RandomizeHammer(Choice):
     """Instead of starting with the hammer in Act 2 and 3, it's an item that needs to be found first.
 
@@ -189,6 +197,7 @@ class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     randomize_codes: RandomizeCodes
     randomize_deck: RandomizeDeck
     randomize_sigils: RandomizeSigils
+    extra_sigils: ExtraSigils
     randomize_hammer: RandomizeHammer
     randomize_shortcuts: RandomizeShortcuts
     randomize_vessel_upgrades: RandomizeVesselUpgrades

@@ -187,6 +187,7 @@ class InscryptionWorld(World):
             "randomize_codes",
             "randomize_deck",
             "randomize_sigils",
+            "extra_sigils",
             "randomize_hammer",
             "randomize_shortcuts",
             "randomize_vessel_upgrades",
