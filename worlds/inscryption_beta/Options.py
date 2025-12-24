@@ -121,7 +121,7 @@ class RandomizeVesselUpgrades(Choice):
 
     - Vanilla: You gain them normally, by picking them up from bosses.
 
-    - Randomize: There's items that open the shortcuts, and locations for talking to the NPCs.
+    - Randomize: Your vessels are upgraded instantly upon receiving a Vessel Upgrade, and there's locations for them.
 
     - Remove One: Same as randomize, but there's one less upgrade in the pool."""
     display_name = "Randomize Vessel Upgrades"

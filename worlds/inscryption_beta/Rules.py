@@ -164,7 +164,8 @@ class InscryptionRules:
         return True
     
     def has_battery_and_quill_or_gems(self, state: CollectionState) -> bool:
-        return (state.has("Quill", self.player) or state.has("Gems Module", self.player)) and self.has_inspectometer_battery(state)
+        return (state.has("Quill", self.player) or state.has("Gems Module", self.player)) and \
+            self.has_inspectometer_battery(state)
 
     def has_act3_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_2:
@@ -179,7 +180,8 @@ class InscryptionRules:
 
     def set_all_rules(self) -> None:
         multiworld = self.world.multiworld
-        multiworld.completion_condition[self.player] = self.has_act2_requirements and self.has_act3_requirements and self.has_epilogue_requirements
+        multiworld.completion_condition[self.player] = self.has_act2_requirements and \
+                        self.has_act3_requirements and self.has_epilogue_requirements
         for region in multiworld.get_regions(self.player):
             if self.world.options.goal == Goal.option_acts_in_order:
                 if region.name in self.region_rules:

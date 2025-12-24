@@ -1,4 +1,5 @@
-from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer, RandomizeShortcuts, RandomizeVesselUpgrades
+from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, \
+      RandomizeHammer, RandomizeShortcuts, RandomizeVesselUpgrades
 from .Items import act1_items, act2_items, act3_items, act2_3_items, filler_items, base_id, InscryptionItem, ItemDict
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
