@@ -124,7 +124,7 @@ class RandomizeVesselUpgrades(Choice):
     - Randomize: There's items that open the shortcuts, and locations for talking to the NPCs.
 
     - Remove One: Same as randomize, but there's one less upgrade in the pool."""
-    display_name = "Randomize Shortcuts"
+    display_name = "Randomize Vessel Upgrades"
     option_vanilla = 0
     option_randomize = 1
     option_remove_one = 2
