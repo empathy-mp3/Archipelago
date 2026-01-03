@@ -131,6 +131,24 @@ class RandomizeVesselUpgrades(Choice):
     default = 0
 
 
+class Act2RandomizeEntrances(Choice):
+    """In Act 2 specifically, randomize where every loading zone takes you
+    (so entering the Crypt Shop might take you to the second floor of the Wizard Tower).
+    The Broken Bridge entrance is always unchanged, since that is temporary.
+
+    - Disable: Entrances are unchanged.
+
+    - Randomize: All entrances are randomized.
+    
+    - Six Zones: The first entrance goes to the world map as normal, and
+    each entrance on the world map has its own separate collection of rooms."""
+    display_name = "Randomize Vessel Upgrades"
+    option_disable = 0
+    option_randomize = 1
+    option_six_zones = 2
+    default = 0
+
+
 class OptionalDeathCard(Choice):
     """Add a moment after death in act 1 where you can decide to create a death card or not.
 
@@ -201,6 +219,7 @@ class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     randomize_hammer: RandomizeHammer
     randomize_shortcuts: RandomizeShortcuts
     randomize_vessel_upgrades: RandomizeVesselUpgrades
+    act2_randomize_entrances: Act2RandomizeEntrances
     optional_death_card: OptionalDeathCard
     skip_tutorial: SkipTutorial
     skip_epilogue: SkipEpilogue

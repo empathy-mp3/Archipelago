@@ -1,12 +1,13 @@
 from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, \
-      RandomizeHammer, RandomizeShortcuts, RandomizeVesselUpgrades
+      RandomizeHammer, RandomizeShortcuts, RandomizeVesselUpgrades, Act2RandomizeEntrances
 from .Items import act1_items, act2_items, act3_items, act2_3_items, filler_items, base_id, InscryptionItem, ItemDict
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
-from typing import Dict, Any
+from typing import Dict, Any, TextIO
 from . import Rules
-from BaseClasses import Region, Item, Tutorial, ItemClassification
+from BaseClasses import Region, Item, Tutorial, ItemClassification, Entrance, EntranceType
 from worlds.AutoWorld import World, WebWorld
+from .ER_Rules import disconnect_entrances, shuffle_transitions
 
 
 class InscrypWeb(WebWorld):
@@ -51,6 +52,7 @@ class InscryptionWorld(World):
     location_name_to_id = {location: i + base_id for i, location in enumerate(all_locations)}
     required_epitaph_pieces_count = 9
     required_epitaph_pieces_name = "Epitaph Piece"
+    transitions: list[Entrance]
 
     def generate_early(self) -> None:
         self.all_items = [item.copy() for item in self.all_items]
@@ -176,6 +178,59 @@ class InscryptionWorld(World):
 
     def set_rules(self) -> None:
         Rules.InscryptionRules(self).set_all_rules()
+
+        def connect_entrances(self) -> None:
+            if self.options.act2_randomize_entrances != Act2RandomizeEntrances.option_disable:
+                disconnect_entrances(self)
+                shuffle_transitions(self)
+
+    def write_spoiler_header(self, spoiler_handle: TextIO) -> None:
+
+        spoiler = self.multiworld.spoiler
+
+        if self.options.act2_randomize_entrances:
+            for transition in self.transitions:
+                if (transition.randomization_type == EntranceType.TWO_WAY
+                        and (transition.connected_region.name, "both", self.player) in spoiler.entrances):
+                    continue
+                spoiler.set_entrance(
+                    transition.name if "->" not in transition.name else transition.parent_region.name,
+                    transition.connected_region.name,
+                    "both" if transition.randomization_type == EntranceType.TWO_WAY
+                              and self.options.act2_randomize_entrances == ShuffleTransitions.option_coupled else "",
+                    self.player
+                )
+
+    def extend_hint_information(self, hint_data: dict[int, dict[int, str]]) -> None:
+        if not self.options.act2_randomize_entrances:
+            return
+
+        hint_data.update({self.player: {}})
+
+        all_state = self.multiworld.get_all_state(True)
+        # sometimes some of my regions aren't in path for some reason?
+        all_state.update_reachable_regions(self.player)
+        paths = all_state.path
+        start = self.get_region("Tower HQ")
+        start_connections = [entrance.name for entrance in start.exits if entrance not in {"Home", "Shrink Down"}]
+        transition_names = [transition.name for transition in self.transitions] + start_connections
+        for loc in self.get_locations():
+            if (loc.parent_region.name in {"Tower HQ", "The Shop", "Music Box", "The Craftsman's Corner"}
+                    or loc.address is None):
+                continue
+            path_to_loc: list[str] = []
+            name, connection = paths.get(loc.parent_region, (None, None))
+            while connection != ("Menu", None) and name is not None:
+                name, connection = connection
+                if name in transition_names:
+                    if name in start_connections:
+                        name = f"{name} -> {self.get_entrance(name).connected_region.name}"
+                    path_to_loc.append(name)
+
+            text = " => ".join(reversed(path_to_loc))
+            if not text:
+                continue
+            hint_data[self.player][loc.address] = text
 
     def fill_slot_data(self) -> Dict[str, Any]:
         return self.options.as_dict(
