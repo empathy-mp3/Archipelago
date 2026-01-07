@@ -63,17 +63,20 @@ class RandomizeDeck(Choice):
 
 
 class RandomizeSigils(Choice):
-    """Randomize sigils printed on the cards into new sigils every encounter.
+    """Randomize sigils printed on the cards into new sigils.
 
     - Disable: Disable the feature.
 
-    - Randomize Addons: Only randomize sigils added from sacrifices or other means.
+    - Randomize Addons: Every encounter, randomize sigils added from sacrifices or other means.
 
-    - Randomize All: Randomize all sigils."""
+    - Randomize All: Every encounter, randomize all sigils.
+    
+    - Randomize Once: When a new card is obtained, randomize its sigils. In Act 2, every copy of the same card will have the same randomized sigils."""
     display_name = "Randomize Abilities"
     option_disable = 0
     option_randomize_addons = 1
     option_randomize_all = 2
+    option_randomize_once = 3
     default = 0
 
 
