@@ -1,12 +1,13 @@
-from .Options import InscryptionOptions, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, \
+from .Options import InscryptionOptions, EnableAct1, EnableAct2, EnableAct3, ActUnlocks, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, \
       RandomizeHammer, RandomizeShortcuts, RandomizeVesselUpgrades
-from .Items import act1_items, act2_items, act3_items, act2_3_items, filler_items, base_id, InscryptionItem, ItemDict
+from .Items import act1_items, act2_items, act3_items, act2_3_items, act_items, filler_items, base_id, InscryptionItem, ItemDict
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
 from typing import Dict, Any
 from . import Rules
 from BaseClasses import Region, Item, Tutorial, ItemClassification
 from worlds.AutoWorld import World, WebWorld
+import random
 
 
 class InscrypWeb(WebWorld):
@@ -45,7 +46,7 @@ class InscryptionWorld(World):
     web = InscrypWeb()
     options_dataclass = InscryptionOptions
     options: InscryptionOptions
-    all_items = act1_items + act2_items + act3_items + act2_3_items + filler_items
+    all_items = act1_items + act2_items + act3_items + act2_3_items + act_items + filler_items
     item_name_to_id = {item["name"]: i + base_id for i, item in enumerate(all_items)}
     all_locations = act1_locations + act2_locations + act3_locations
     location_name_to_id = {location: i + base_id for i, location in enumerate(all_locations)}
@@ -80,6 +81,13 @@ class InscryptionWorld(World):
         if self.options.randomize_vessel_upgrades != RandomizeVesselUpgrades.option_randomize:
             self.all_items[len(act1_items) + len(act2_items) + 15]["count"] = 2
 
+        if self.options.act_unlocks == ActUnlocks.option_items:
+            possible_acts = []
+            if EnableAct1: possible_acts.append("Act 1")
+            if EnableAct2: possible_acts.append("Act 2")
+            if EnableAct3: possible_acts.append("Act 3")
+            self.multiworld.push_precollected(self.create_item(random.choice(possible_acts)))
+
     def get_filler_item_name(self) -> str:
         return self.random.choice(filler_items)["name"]
 
@@ -95,6 +103,14 @@ class InscryptionWorld(World):
 
         useful_items = [item for item in useful_items
                         if not any(filler_item["name"] == item["name"] for filler_item in filler_items)]
+        if self.options.act_unlocks == ActUnlocks.option_items:
+            if not EnableAct3: useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 3)
+            if not EnableAct2: useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 2)
+            if not EnableAct1: useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 1)
+        else:
+            useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 3)
+            useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 2)
+            useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 1)
         if self.options.randomize_hammer != RandomizeHammer.option_randomize \
         or not (self.options.enable_act_2 or self.options.enable_act_3):
             useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items))

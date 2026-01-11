@@ -27,17 +27,29 @@ class EnableAct3(DefaultOnToggle):
     """Play Act 3 in the randomizer."""
     display_name = "Enable Act 3"
 
+class ActUnlocks(Choice):
+    """Defines how acts are unlocked. You can always switch between any unlocked act.
+
+    - Sequential: You start with the first enabled act. After completing an act, you gain access to the next enabled one.
+
+    - Open: Every act is unlocked from the start.
+
+    - Items: You start with a random enabled act. There are "Act 1", "Act 2", and "Act 3" items that unlock other acts."""
+    display_name = "Act Unlocks"
+    option_sequential = 0
+    option_open = 1
+    option_items = 2
+    default = 0
+
 
 class Goal(Choice):
-    """Defines the goal to accomplish in order to complete the randomizer.
-
-    - Acts In Order: Complete each enabled act in order. You can return to previously completed acts.
-
-    - Acts Any Order: Complete each enabled act in any order. All enabled acts are available from the start."""
+    """Choose how many acts to beat in order to complete the randomizer.
+    If you choose a higher number than are enabled, it requires all of them."""
     display_name = "Goal"
-    option_acts_in_order = 0
-    option_acts_any_order = 1
-    default = 0
+    option_one_act = 0
+    option_two_acts = 1
+    option_all_acts = 2
+    default = 2
 
 
 class RandomizeCodes(Toggle):
@@ -47,7 +59,8 @@ class RandomizeCodes(Toggle):
 
 class RandomizeDeck(Choice):
     """Randomize cards in your deck into new cards.
-    Disable: Disable the feature.
+
+    - Disable: Disable the feature.
 
     - Every Encounter Within Same Type: Randomize cards within the same type every encounter (keep rarity/scrybe type).
 
@@ -196,6 +209,7 @@ class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     enable_act_1: EnableAct1
     enable_act_2: EnableAct2
     enable_act_3: EnableAct3
+    act_unlocks: ActUnlocks
     goal: Goal
     randomize_codes: RandomizeCodes
     randomize_deck: RandomizeDeck
