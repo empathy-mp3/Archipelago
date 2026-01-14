@@ -27,6 +27,7 @@ class EnableAct3(DefaultOnToggle):
     """Play Act 3 in the randomizer."""
     display_name = "Enable Act 3"
 
+
 class ActUnlocks(Choice):
     """Defines how acts are unlocked. You can always switch between any unlocked act.
 
@@ -39,6 +40,16 @@ class ActUnlocks(Choice):
     option_sequential = 0
     option_open = 1
     option_items = 2
+    default = 0
+
+
+class StartingAct(Choice):
+    """Choose which act to start with.
+    This only applies to Act Unlocks: Items, and no other options."""
+    display_name = "Starting Act"
+    option_act_1 = 0
+    option_act_2 = 1
+    option_act_3 = 2
     default = 0
 
 
@@ -209,6 +220,7 @@ class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     enable_act_1: EnableAct1
     enable_act_2: EnableAct2
     enable_act_3: EnableAct3
+    starting_act: StartingAct
     act_unlocks: ActUnlocks
     goal: Goal
     randomize_codes: RandomizeCodes

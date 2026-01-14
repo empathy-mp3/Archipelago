@@ -1,13 +1,13 @@
-from .Options import InscryptionOptions, EnableAct1, EnableAct2, EnableAct3, ActUnlocks, Goal, EpitaphPiecesRandomization, PaintingChecksBalancing, \
-      RandomizeHammer, RandomizeShortcuts, RandomizeVesselUpgrades
+from .Options import InscryptionOptions, EnableAct1, EnableAct2, EnableAct3, ActUnlocks, Goal, EpitaphPiecesRandomization, \
+      PaintingChecksBalancing, RandomizeHammer, RandomizeShortcuts, RandomizeVesselUpgrades, StartingAct
 from .Items import act1_items, act2_items, act3_items, act2_3_items, act_items, filler_items, base_id, InscryptionItem, ItemDict
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
 from typing import Dict, Any
 from . import Rules
 from BaseClasses import Region, Item, Tutorial, ItemClassification
+from Options import OptionError
 from worlds.AutoWorld import World, WebWorld
-import random
 
 
 class InscrypWeb(WebWorld):
@@ -54,6 +54,18 @@ class InscryptionWorld(World):
     required_epitaph_pieces_name = "Epitaph Piece"
 
     def generate_early(self) -> None:
+        if not self.options.enable_act_1 and not self.options.enable_act_2 and not self.options.enable_act_3:
+            raise OptionError(f'{self.player_name} must enable at least one act.')
+        if self.options.act_unlocks == ActUnlocks.option_items:
+            if  (not self.options.enable_act_1 and self.options.starting_act == StartingAct.option_act_1) or \
+                (not self.options.enable_act_2 and self.options.starting_act == StartingAct.option_act_2) or \
+                (not self.options.enable_act_3 and self.options.starting_act == StartingAct.option_act_3):
+                    possible_starts = []
+                    if self.options.enable_act_1: possible_starts.append(StartingAct.option_act_1)
+                    if self.options.enable_act_2: possible_starts.append(StartingAct.option_act_2)
+                    if self.options.enable_act_3: possible_starts.append(StartingAct.option_act_3)
+                    self.options.starting_act = StartingAct(self.random.choice(possible_starts))
+
         self.all_items = [item.copy() for item in self.all_items]
 
         if self.options.epitaph_pieces_randomization == EpitaphPiecesRandomization.option_all_pieces:
@@ -82,11 +94,12 @@ class InscryptionWorld(World):
             self.all_items[len(act1_items) + len(act2_items) + 15]["count"] = 2
 
         if self.options.act_unlocks == ActUnlocks.option_items:
-            possible_acts = []
-            if EnableAct1: possible_acts.append("Act 1")
-            if EnableAct2: possible_acts.append("Act 2")
-            if EnableAct3: possible_acts.append("Act 3")
-            self.multiworld.push_precollected(self.create_item(random.choice(possible_acts)))
+            if self.options.starting_act == StartingAct.option_act_1: 
+                self.multiworld.push_precollected(self.create_item("Act 1"))
+            elif self.options.starting_act == StartingAct.option_act_2: 
+                self.multiworld.push_precollected(self.create_item("Act 2"))
+            elif self.options.starting_act == StartingAct.option_act_3: 
+                self.multiworld.push_precollected(self.create_item("Act 3"))
 
     def get_filler_item_name(self) -> str:
         return self.random.choice(filler_items)["name"]
@@ -104,9 +117,12 @@ class InscryptionWorld(World):
         useful_items = [item for item in useful_items
                         if not any(filler_item["name"] == item["name"] for filler_item in filler_items)]
         if self.options.act_unlocks == ActUnlocks.option_items:
-            if not EnableAct3: useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 3)
-            if not EnableAct2: useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 2)
-            if not EnableAct1: useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 1)
+            if not self.options.enable_act_3 or self.options.starting_act == StartingAct.option_act_3: 
+                useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 3)
+            if not self.options.enable_act_2 or self.options.starting_act == StartingAct.option_act_2: 
+                useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 2)
+            if not self.options.enable_act_1 or self.options.starting_act == StartingAct.option_act_1: 
+                useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 1)
         else:
             useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 3)
             useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items) + 2)
@@ -200,6 +216,7 @@ class InscryptionWorld(World):
             "enable_act_1",
             "enable_act_2",
             "enable_act_3",
+            "act_unlocks",
             "goal",
             "randomize_codes",
             "randomize_deck",

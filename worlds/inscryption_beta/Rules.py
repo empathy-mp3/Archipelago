@@ -175,7 +175,7 @@ class InscryptionRules:
             if self.world.options.act_unlocks == ActUnlocks.option_items:
                 return state.has("Act 2", self.player)
             elif self.world.options.act_unlocks == ActUnlocks.option_sequential:
-                self.beat_act1_requirements(state)
+                return self.beat_act1_requirements(state)
         return True
     
     def beat_act2_requirements(self, state: CollectionState) -> bool:
@@ -193,7 +193,7 @@ class InscryptionRules:
             if self.world.options.act_unlocks == ActUnlocks.option_items:
                 return state.has("Act 3", self.player)
             elif self.world.options.act_unlocks == ActUnlocks.option_sequential:
-                self.beat_act2_requirements(state)
+                return self.beat_act2_requirements(state)
         return True
 
     def beat_act3_requirements(self, state: CollectionState) -> bool:
@@ -204,10 +204,10 @@ class InscryptionRules:
     def has_epilogue_requirements(self, state: CollectionState) -> bool:
         total_acts = self.world.options.enable_act_1.__int__() + self.world.options.enable_act_2.__int__() \
                     + self.world.options.enable_act_3.__int__()
-        act1 = bool(self.world.options.enable_act_1) and bool(self.beat_act1_requirements)
-        act2 = bool(self.world.options.enable_act_2) and bool(self.beat_act2_requirements)
-        act3 = bool(self.world.options.enable_act_3) and bool(self.beat_act3_requirements)
-        required_acts = self.world.options.goal.__int__()
+        act1 = self.world.options.enable_act_1.__bool__ and self.beat_act1_requirements(state)
+        act2 = self.world.options.enable_act_2.__bool__ and self.beat_act2_requirements(state)
+        act3 = self.world.options.enable_act_3.__bool__ and self.beat_act3_requirements(state)
+        required_acts = self.world.options.goal.__int__() + 1
         if required_acts > total_acts: required_acts = total_acts # required acts always =< total acts
 
         if required_acts == 1:
