@@ -1,6 +1,6 @@
 from typing import Dict, Callable, TYPE_CHECKING
 from BaseClasses import CollectionState, LocationProgressType
-from .Options import Goal, PaintingChecksBalancing
+from .Options import ActUnlocks, Goal, PaintingChecksBalancing
 
 if TYPE_CHECKING:
     from . import InscryptionWorld
@@ -96,6 +96,7 @@ class InscryptionRules:
             "Act 3 - Conduit Upgrade": self.has_gems_and_battery
         }
         self.region_rules = {
+            "Act 1": self.has_act1_requirements,
             "Act 2": self.has_act2_requirements,
             "Act 3": self.has_act3_requirements,
             "Epilogue": self.has_epilogue_requirements
@@ -158,32 +159,70 @@ class InscryptionRules:
     def has_transcendence_requirements(self, state: CollectionState) -> bool:
         return state.has("Quill", self.player) and self.has_gems_and_battery(state)
 
-    def has_act2_requirements(self, state: CollectionState) -> bool:
+    def has_act1_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_1:
-            return state.has("Film Roll", self.player)
+            if self.world.options.act_unlocks == ActUnlocks.option_items:
+                return state.has("Act 1", self.player)
+        return True
+
+    def beat_act1_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.enable_act_1:
+            return self.has_act1_requirements(state) and state.has("Film Roll", self.player)
+        return True
+
+    def has_act2_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.enable_act_2:
+            if self.world.options.act_unlocks == ActUnlocks.option_items:
+                return state.has("Act 2", self.player)
+            elif self.world.options.act_unlocks == ActUnlocks.option_sequential:
+                return self.beat_act1_requirements(state)
         return True
     
+    def beat_act2_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.enable_act_2:
+            return self.has_act2_requirements(state) and self.has_all_epitaph_pieces(state) and \
+                self.has_camera_and_meat(state) and self.has_monocle(state)
+        return True
+
     def has_battery_and_quill_or_gems(self, state: CollectionState) -> bool:
         return (state.has("Quill", self.player) or state.has("Gems Module", self.player)) and \
             self.has_inspectometer_battery(state)
 
     def has_act3_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.enable_act_2:
-            return self.has_act2_requirements(state) and self.has_all_epitaph_pieces(state) and \
-                self.has_camera_and_meat(state) and self.has_monocle(state)
-        return self.has_act2_requirements(state)
+        if self.world.options.enable_act_3:
+            if self.world.options.act_unlocks == ActUnlocks.option_items:
+                return state.has("Act 3", self.player)
+            elif self.world.options.act_unlocks == ActUnlocks.option_sequential:
+                return self.beat_act2_requirements(state)
+        return True
 
-    def has_epilogue_requirements(self, state: CollectionState) -> bool:
+    def beat_act3_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_3:
             return self.has_act3_requirements(state) and self.has_transcendence_requirements(state)
-        return self.has_act3_requirements(state)
+        return True
+
+    def has_epilogue_requirements(self, state: CollectionState) -> bool:
+        total_acts = self.world.options.enable_act_1.__int__() + self.world.options.enable_act_2.__int__() \
+                    + self.world.options.enable_act_3.__int__()
+        act1 = self.world.options.enable_act_1.__bool__ and self.beat_act1_requirements(state)
+        act2 = self.world.options.enable_act_2.__bool__ and self.beat_act2_requirements(state)
+        act3 = self.world.options.enable_act_3.__bool__ and self.beat_act3_requirements(state)
+        required_acts = self.world.options.goal.__int__() + 1
+        if required_acts > total_acts: required_acts = total_acts # required acts always =< total acts
+
+        if required_acts == 1:
+            return act1 or act2 or act3
+        if required_acts == 2:
+            return (act1 and act2) or (act1 and act3) or (act2 and act3)
+        if required_acts == 3:
+            return act1 and act2 and act3
+        return True
 
     def set_all_rules(self) -> None:
         multiworld = self.world.multiworld
-        multiworld.completion_condition[self.player] = self.has_act2_requirements and \
-                        self.has_act3_requirements and self.has_epilogue_requirements
+        multiworld.completion_condition[self.player] = self.has_epilogue_requirements
         for region in multiworld.get_regions(self.player):
-            if self.world.options.goal == Goal.option_acts_in_order:
+            if self.world.options.act_unlocks != ActUnlocks.option_open:
                 if region.name in self.region_rules:
                     for entrance in region.entrances:
                         entrance.access_rule = self.region_rules[region.name]
