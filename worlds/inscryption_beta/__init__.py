@@ -154,6 +154,16 @@ class InscryptionWorld(World):
                 useful_items.pop(len(act1_items) + 3)
             else:
                 useful_items.pop(len(act1_items) + 2)
+        if self.options.enable_act_1:
+            if not self.options.act1_randomize_nodes:
+                useful_items.pop(16) # woodcarver node
+                useful_items.pop(17) # trader node
+                useful_items.pop(18) # mycologists node
+                useful_items.pop(19) # bone altar node
+                useful_items.pop(20) # sacrifice stones node
+                useful_items.pop(21) # backpack node
+                useful_items.pop(22) # campfire node
+                useful_items.pop(23) # goobert node
         if not self.options.enable_act_1:
             useful_items = [item for item in useful_items
                             if not any(act1_item["name"] == item["name"] for act1_item in act1_items)]

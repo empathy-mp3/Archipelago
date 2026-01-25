@@ -112,6 +112,12 @@ class ExtraSigils(Toggle):
     display_name = "Extra Sigils"
 
 
+class Act1RandomizeNodes(Toggle):
+    """Some important nodes on the map in Act 1 won't do anything until they're received.
+    Logic will expect nodes for later parts of the map."""
+    display_name = "Act 1 Randomize Nodes"
+
+
 class RandomizeHammer(Choice):
     """Instead of starting with the hammer in Act 2 and 3, it's an item that needs to be found first.
 
@@ -259,6 +265,7 @@ class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     randomize_deck: RandomizeDeck
     randomize_sigils: RandomizeSigils
     extra_sigils: ExtraSigils
+    act1_randomize_nodes: Act1RandomizeNodes
     randomize_hammer: RandomizeHammer
     randomize_shortcuts: RandomizeShortcuts
     randomize_vessel_upgrades: RandomizeVesselUpgrades

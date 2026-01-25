@@ -65,7 +65,31 @@ act1_items: List[ItemDict] = [
      'classification': ItemClassification.useful},
     {'name': "Angler Hook",
      'count': 1,
-     'classification': ItemClassification.useful}
+     'classification': ItemClassification.useful},
+    {'name': "Woodcarver Node",
+     'count': 1,
+     'classification': ItemClassification.progression},
+    {'name': "Trader Node",
+     'count': 1,
+     'classification': ItemClassification.progression},
+    {'name': "Mycologists Node",
+     'count': 1,
+     'classification': ItemClassification.progression},
+    {'name': "Bone Altar Node",
+     'count': 1,
+     'classification': ItemClassification.progression},
+    {'name': "Sacrifice Stones Node",
+     'count': 1,
+     'classification': ItemClassification.progression},
+    {'name': "Backpack Node",
+     'count': 1,
+     'classification': ItemClassification.progression},
+    {'name': "Campfire Node",
+     'count': 1,
+     'classification': ItemClassification.progression},
+    {'name': "Goobert Node",
+     'count': 1,
+     'classification': ItemClassification.progression}
 ]
 
 
