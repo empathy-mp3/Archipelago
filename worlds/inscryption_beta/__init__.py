@@ -230,6 +230,17 @@ class InscryptionWorld(World):
                 regions_to_locations["Act 3"].pop(33)
                 regions_to_locations["Act 3"].pop(32)
                 regions_to_locations["Act 3"].pop(31)
+        if self.options.enable_act_1:
+            if not self.options.act1_randomize_nodes:
+                regions_to_locations["Act 1"].pop(25)
+                regions_to_locations["Act 1"].pop(24)
+                regions_to_locations["Act 1"].pop(23)
+                regions_to_locations["Act 1"].pop(22)
+                regions_to_locations["Act 1"].pop(21)
+                regions_to_locations["Act 1"].pop(20)
+                regions_to_locations["Act 1"].pop(19)
+                regions_to_locations["Act 1"].pop(18)
+                regions_to_locations["Act 1"].pop(17)
         for region_name in used_regions.keys():
             self.multiworld.regions.append(Region(region_name, self.player, self.multiworld))
 
@@ -256,6 +267,7 @@ class InscryptionWorld(World):
             "randomize_deck",
             "randomize_sigils",
             "extra_sigils",
+            "act1_randomize_nodes",
             "randomize_hammer",
             "randomize_shortcuts",
             "randomize_vessel_upgrades",

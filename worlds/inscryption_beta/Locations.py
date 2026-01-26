@@ -26,7 +26,16 @@ act1_locations = [
     "Act 1 - Painting 1",
     "Act 1 - Painting 2",
     "Act 1 - Painting 3",
-    "Act 1 - Greater Smoke"
+    "Act 1 - Greater Smoke",
+    "Act 1 - Woodlands Battle 1",
+    "Act 1 - Woodlands Battle 2",
+    "Act 1 - Woodlands Battle 3",
+    "Act 1 - Wetlands Battle 1",
+    "Act 1 - Wetlands Battle 2",
+    "Act 1 - Wetlands Battle 3",
+    "Act 1 - Snow Line Battle 1",
+    "Act 1 - Snow Line Battle 2",
+    "Act 1 - Snow Line Battle 3"
 ]
 
 act2_locations = [
