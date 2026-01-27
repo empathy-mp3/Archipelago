@@ -1,6 +1,6 @@
 from typing import Dict, Callable, TYPE_CHECKING
 from BaseClasses import CollectionState, LocationProgressType
-from .Options import ActUnlocks, Goal, PaintingChecksBalancing
+from .Options import ActUnlocks, Goal, PaintingChecksBalancing, RandomizeChallenges
 
 if TYPE_CHECKING:
     from . import InscryptionWorld
@@ -26,14 +26,15 @@ class InscryptionRules:
             "Act 1 - Dagger": self.has_caged_wolf,
             "Act 1 - Magnificus Eye": self.has_dagger,
             "Act 1 - Clock Main Compartment": self.has_magnificus_eye,
+            "Act 1 - Boss Prospector": self.has_prospector_requirements,
             "Act 1 - Wetlands Battle 1": self.has_wetlands_requirements,
             "Act 1 - Wetlands Battle 2": self.has_wetlands_requirements,
             "Act 1 - Wetlands Battle 3": self.has_wetlands_requirements,
-            "Act 1 - Boss Angler": self.has_wetlands_requirements,
+            "Act 1 - Boss Angler": self.has_angler_requirements,
             "Act 1 - Snow Line Battle 1": self.has_snow_line_requirements,
             "Act 1 - Snow Line Battle 2": self.has_snow_line_requirements,
             "Act 1 - Snow Line Battle 3": self.has_snow_line_requirements,
-            "Act 1 - Boss Trapper": self.has_snow_line_requirements,
+            "Act 1 - Boss Trapper": self.has_trapper_requirements,
             "Act 1 - Boss Leshy": self.has_leshy_requirements,
             "Act 2 - Battle Prospector": self.has_camera_and_meat,
             "Act 2 - Battle Angler": self.has_camera_and_meat,
@@ -111,28 +112,89 @@ class InscryptionRules:
             "Epilogue": self.has_epilogue_requirements
         }
 
-    def has_wetlands_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.act1_randomize_nodes:
+    act1_item_values: Dict[str, int] = {
+        "Angler Hook": 1,
+        "Oil Painting's Clover Plant": 1,
+        "Dagger": 1,
+        "Mycologists Node": 1,
+        "Bone Altar Node": 1,
+        "Goobert Node": 1,
+        "Woodcarver Node": 2,
+        "Trader Node": 2,
+        "Backpack Node": 2,
+        "Sacrifice Stones Node": 3,
+        "Campfire Node": 3,
+        "Smaller Backpack Challenge": 1,
+        "Totem Bosses Challenge": 3,
+        "All Totem Battles Challenge": 3,
+    }
+
+    act1_progressive_values: Dict[str, list[int]] = {
+        "More Difficult Challenge": [3, 3],
+        "Progressive Candle": [3, 3],
+        "Progressive Squirrel": [2, 3],
+        "Progressive Tipped Scales": [1, 1, 2, 3]
+    }
+
+    def has_prospector_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.randomize_nodes:
             return state.has_from_list_unique(["Woodcarver Node", "Sacrifice Stones Node", "Backpack Node",
-                "Campfire Node","Bee Figurine", "Oil Painting's Clover Plant", "Dagger", "Angler Hook"], self.player, 1)
+                "Campfire Node","Bee Figurine", "Oil Painting's Clover Plant", "Dagger", "Angler Hook", "Extra Candle",
+                "Greater Smoke"], self.player, 1)
+        return True
+
+    def has_wetlands_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.randomize_nodes:
+            enough = state.count_from_list_unique(["Woodcarver Node", "Oil Painting's Clover Plant", 
+                                                   "Dagger", "Angler Hook", "Extra Candle"], self.player)
+            enough += 2 * state.count_from_list_unique(["Sacrifice Stones Node", "Backpack Node",
+                                                        "Campfire Node", "Bee Figurine"], self.player)
+            enough += int(state.has_all(["Woodcarver Node", "Squirrel Totem Head"], self.player))
+            return enough >= 2 and self.has_prospector_requirements(state)
+        return True
+    
+    def has_angler_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.randomize_nodes:
+            enough = state.count_from_list_unique(["Woodcarver Node", "Oil Painting's Clover Plant", 
+                "Dagger", "Angler Hook", "Extra Candle", "Greater Smoke", "Trader Node", 
+                "Mycologists Node", "Bone Altar Node", "Goobert Node"], self.player)
+            enough += 2 * state.count_from_list_unique(["Sacrifice Stones Node", "Backpack Node",
+                                                        "Campfire Node", "Bee Figurine"], self.player)
+            enough += int(state.has_all(["Woodcarver Node", "Squirrel Totem Head"], self.player))
+            return enough >= 4 and self.has_wetlands_requirements(state)
         return True
 
     def has_snow_line_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.act1_randomize_nodes:
-            squirrel = int(state.has_all(["Woodcarver Node", "Squirrel Totem Head"], self.player))
-            return state.has_from_list_unique(["Woodcarver Node", "Sacrifice Stones Node", "Backpack Node", 
-                "Campfire Node", "Bee Figurine", "Oil Painting's Clover Plant", "Angler Hook", "Trader Node", 
-                "Mycologists Node", "Bone Altar Node", "Goobert Node"], self.player, 3 - squirrel) and \
-                self.has_wetlands_requirements(state)
+        if self.world.options.randomize_nodes:
+            enough = state.count_from_list_unique(["Woodcarver Node", "Oil Painting's Clover Plant", 
+                "Dagger", "Angler Hook", "Extra Candle", "Trader Node", 
+                "Mycologists Node", "Bone Altar Node", "Goobert Node"], self.player)
+            enough += 2 * state.count_from_list_unique(["Sacrifice Stones Node", "Backpack Node",
+                                                        "Campfire Node", "Bee Figurine"], self.player)
+            enough += int(state.has_all(["Woodcarver Node", "Squirrel Totem Head"], self.player))
+            return enough >= 5 and self.has_angler_requirements(state)
+        return True
+
+    def has_trapper_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.randomize_nodes:
+            enough = state.count_from_list_unique(["Woodcarver Node", "Oil Painting's Clover Plant", 
+                "Dagger", "Angler Hook", "Extra Candle", "Greater Smoke", "Trader Node", 
+                "Mycologists Node", "Bone Altar Node", "Goobert Node"], self.player)
+            enough += 2 * state.count_from_list_unique(["Sacrifice Stones Node", "Backpack Node",
+                                                        "Campfire Node", "Bee Figurine"], self.player)
+            enough += int(state.has_all(["Woodcarver Node", "Squirrel Totem Head"], self.player))
+            return enough >= 7 and self.has_snow_line_requirements(state)
         return True
 
     def has_leshy_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.act1_randomize_nodes:
-            squirrel = int(state.has_all(["Woodcarver Node", "Squirrel Totem Head"], self.player))
-            return state.has_from_list_unique(["Woodcarver Node", "Sacrifice Stones Node", "Backpack Node", 
-                "Campfire Node", "Bee Figurine", "Oil Painting's Clover Plant", "Trader Node", "Mycologists Node", 
-                "Bone Altar Node", "Goobert Node", "Ring", "Extra Candle", "Greater Smoke"], self.player, 
-                4 - squirrel) and self.has_snow_line_requirements(state)
+        if self.world.options.randomize_nodes:
+            enough = state.count_from_list_unique(["Woodcarver Node", "Oil Painting's Clover Plant", 
+                "Dagger", "Angler Hook", "Extra Candle", "Greater Smoke", "Trader Node", 
+                "Mycologists Node", "Bone Altar Node", "Goobert Node", "Ring"], self.player)
+            enough += 2 * state.count_from_list_unique(["Sacrifice Stones Node", "Backpack Node",
+                                                        "Campfire Node", "Bee Figurine"], self.player)
+            enough += int(state.has_all(["Woodcarver Node", "Squirrel Totem Head"], self.player))
+            return enough >= 9 and self.has_trapper_requirements(state)
         return True
 
     def has_wardrobe_key(self, state: CollectionState) -> bool:
@@ -148,7 +210,7 @@ class InscryptionRules:
         return state.has("Magnificus Eye", self.player)
 
     def has_useful_act1_items(self, state: CollectionState) -> bool:
-        if self.world.options.act1_randomize_nodes:
+        if self.world.options.randomize_nodes:
             return state.has_all(("Oil Painting's Clover Plant", "Squirrel Totem Head", "Woodcarver Node"), self.player)
         return state.has_all(("Oil Painting's Clover Plant", "Squirrel Totem Head"), self.player)
 

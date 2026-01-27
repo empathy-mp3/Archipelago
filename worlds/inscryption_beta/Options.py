@@ -111,11 +111,22 @@ class ExtraSigils(Toggle):
     Some very strong sigils will not show up."""
     display_name = "Extra Sigils"
 
-
-class Act1RandomizeNodes(Toggle):
+class RandomizeNodes(Toggle):
     """Some important nodes on the map in Act 1 won't do anything until they're received.
-    Logic will expect nodes for later parts of the map."""
-    display_name = "Act 1 Randomize Nodes"
+    Logic will expect nodes and challenges for later parts of the map."""
+    display_name = "Randomize Nodes and Challenges"
+
+
+class RandomizeChallenges(Choice):
+    """Some Kaycee's Mod Challenges will be enabled by default and need items to remove them.
+    Logic will expect nodes and challenges for later parts of the map.
+    
+    No Grizzlies: Randomize everything except Grizzly Bosses Challenge, which is disabled."""
+    display_name = "Randomize Nodes and Challenges"
+    option_disable = 0
+    option_no_grizzlies = 1
+    option_randomize = 2
+    default = 0
 
 
 class RandomizeHammer(Choice):
@@ -265,7 +276,8 @@ class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
     randomize_deck: RandomizeDeck
     randomize_sigils: RandomizeSigils
     extra_sigils: ExtraSigils
-    act1_randomize_nodes: Act1RandomizeNodes
+    randomize_nodes: RandomizeNodes
+    randomize_challenges: RandomizeChallenges
     randomize_hammer: RandomizeHammer
     randomize_shortcuts: RandomizeShortcuts
     randomize_vessel_upgrades: RandomizeVesselUpgrades

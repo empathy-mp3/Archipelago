@@ -1,6 +1,6 @@
-from .Options import InscryptionOptions, EnableAct1, EnableAct2, EnableAct3, ActUnlocks, Goal, EpitaphPiecesRandomization, \
-      PaintingChecksBalancing, RandomizeHammer, RandomizeShortcuts, RandomizeVesselUpgrades, StartingAct
-from .Items import act1_items, act2_items, act3_items, act2_3_items, act_items, filler_items, trap_items, base_id, InscryptionItem, ItemDict
+from .Options import InscryptionOptions, ActUnlocks, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer, \
+    RandomizeShortcuts, RandomizeVesselUpgrades, StartingAct, RandomizeChallenges
+from .Items import act1_items, act2_items, act3_items, act2_3_items, act_items, filler_items, trap_items, base_id, InscryptionItem
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
 from typing import Dict, Any
@@ -82,7 +82,7 @@ class InscryptionWorld(World):
         else:
             self.required_epitaph_pieces_name = "Epitaph Pieces"
             self.required_epitaph_pieces_count = 1
-        if self.options.act1_randomize_nodes:
+        if not self.options.randomize_nodes:
             self.all_items[6]["classification"] = ItemClassification.progression
             self.all_items[9]["classification"] = ItemClassification.progression
             self.all_items[11]["classification"] = ItemClassification.progression
@@ -162,15 +162,30 @@ class InscryptionWorld(World):
             else:
                 useful_items.pop(len(act1_items) + 2)
         if self.options.enable_act_1:
-            if not self.options.act1_randomize_nodes:
-                useful_items.pop(16) # woodcarver node
-                useful_items.pop(17) # trader node
-                useful_items.pop(18) # mycologists node
-                useful_items.pop(19) # bone altar node
-                useful_items.pop(20) # sacrifice stones node
-                useful_items.pop(21) # backpack node
-                useful_items.pop(22) # campfire node
+            if self.options.randomize_challenges == RandomizeChallenges.option_disable:
+                useful_items.pop(31) # progressive grizzlies
+                useful_items.pop(31) # progressive squirrel
+                useful_items.pop(30) # progressive candle
+                useful_items.pop(29) # more difficult challenge
+                useful_items.pop(28) # all totem battles challenge
+                useful_items.pop(27) # progressive tipped scales
+                useful_items.pop(26) # totem bosses challenge
+                useful_items.pop(25) # expensive pelts challenge
+                useful_items.pop(24) # smaller backpack challenge
+            elif self.options.randomize_challenges == RandomizeChallenges.option_no_grizzlies:
+                useful_items.pop(31) # progressive grizzlies
+            if not self.options.randomize_nodes:
                 useful_items.pop(23) # goobert node
+                useful_items.pop(22) # campfire node
+                useful_items.pop(21) # backpack node
+                useful_items.pop(20) # sacrifice stones node
+                useful_items.pop(19) # bone altar node
+                useful_items.pop(18) # mycologists node
+                useful_items.pop(17) # trader node
+                useful_items.pop(16) # woodcarver node
+            if self.options.randomize_challenges != RandomizeChallenges.option_disable:
+                useful_items.pop(13) # bee figurine (it's progressive now)
+                useful_items.pop(12) # extra candle (it's progressive now)
         if not self.options.enable_act_1:
             useful_items = [item for item in useful_items
                             if not any(act1_item["name"] == item["name"] for act1_item in act1_items)]
@@ -238,16 +253,17 @@ class InscryptionWorld(World):
                 regions_to_locations["Act 3"].pop(32)
                 regions_to_locations["Act 3"].pop(31)
         if self.options.enable_act_1:
-            if not self.options.act1_randomize_nodes:
-                regions_to_locations["Act 1"].pop(25)
-                regions_to_locations["Act 1"].pop(24)
-                regions_to_locations["Act 1"].pop(23)
-                regions_to_locations["Act 1"].pop(22)
-                regions_to_locations["Act 1"].pop(21)
-                regions_to_locations["Act 1"].pop(20)
-                regions_to_locations["Act 1"].pop(19)
-                regions_to_locations["Act 1"].pop(18)
-                regions_to_locations["Act 1"].pop(17)
+            if not self.options.randomize_nodes and \
+                self.options.randomize_challenges == RandomizeChallenges.option_disable:
+                    regions_to_locations["Act 1"].pop(25)
+                    regions_to_locations["Act 1"].pop(24)
+                    regions_to_locations["Act 1"].pop(23)
+                    regions_to_locations["Act 1"].pop(22)
+                    regions_to_locations["Act 1"].pop(21)
+                    regions_to_locations["Act 1"].pop(20)
+                    regions_to_locations["Act 1"].pop(19)
+                    regions_to_locations["Act 1"].pop(18)
+                    regions_to_locations["Act 1"].pop(17)
         for region_name in used_regions.keys():
             self.multiworld.regions.append(Region(region_name, self.player, self.multiworld))
 
@@ -274,7 +290,8 @@ class InscryptionWorld(World):
             "randomize_deck",
             "randomize_sigils",
             "extra_sigils",
-            "act1_randomize_nodes",
+            "randomize_nodes",
+            "randomize_challenges",
             "randomize_hammer",
             "randomize_shortcuts",
             "randomize_vessel_upgrades",
