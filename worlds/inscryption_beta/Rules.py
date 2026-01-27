@@ -26,6 +26,15 @@ class InscryptionRules:
             "Act 1 - Dagger": self.has_caged_wolf,
             "Act 1 - Magnificus Eye": self.has_dagger,
             "Act 1 - Clock Main Compartment": self.has_magnificus_eye,
+            "Act 1 - Wetlands Battle 1": self.has_wetlands_requirements,
+            "Act 1 - Wetlands Battle 2": self.has_wetlands_requirements,
+            "Act 1 - Wetlands Battle 3": self.has_wetlands_requirements,
+            "Act 1 - Boss Angler": self.has_wetlands_requirements,
+            "Act 1 - Snow Line Battle 1": self.has_snow_line_requirements,
+            "Act 1 - Snow Line Battle 2": self.has_snow_line_requirements,
+            "Act 1 - Snow Line Battle 3": self.has_snow_line_requirements,
+            "Act 1 - Boss Trapper": self.has_snow_line_requirements,
+            "Act 1 - Boss Leshy": self.has_leshy_requirements,
             "Act 2 - Battle Prospector": self.has_camera_and_meat,
             "Act 2 - Battle Angler": self.has_camera_and_meat,
             "Act 2 - Battle Trapper": self.has_camera_and_meat,
@@ -102,6 +111,30 @@ class InscryptionRules:
             "Epilogue": self.has_epilogue_requirements
         }
 
+    def has_wetlands_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.act1_randomize_nodes:
+            return state.has_from_list_unique(["Woodcarver Node", "Sacrifice Stones Node", "Backpack Node",
+                "Campfire Node","Bee Figurine", "Oil Painting's Clover Plant", "Dagger", "Angler Hook"], self.player, 1)
+        return True
+
+    def has_snow_line_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.act1_randomize_nodes:
+            squirrel = int(state.has_all(["Woodcarver Node", "Squirrel Totem Head"], self.player))
+            return state.has_from_list_unique(["Woodcarver Node", "Sacrifice Stones Node", "Backpack Node", 
+                "Campfire Node", "Bee Figurine", "Oil Painting's Clover Plant", "Angler Hook", "Trader Node", 
+                "Mycologists Node", "Bone Altar Node", "Goobert Node"], self.player, 3 - squirrel) and \
+                self.has_wetlands_requirements(state)
+        return True
+
+    def has_leshy_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.act1_randomize_nodes:
+            squirrel = int(state.has_all(["Woodcarver Node", "Squirrel Totem Head"], self.player))
+            return state.has_from_list_unique(["Woodcarver Node", "Sacrifice Stones Node", "Backpack Node", 
+                "Campfire Node", "Bee Figurine", "Oil Painting's Clover Plant", "Trader Node", "Mycologists Node", 
+                "Bone Altar Node", "Goobert Node", "Ring", "Extra Candle", "Greater Smoke"], self.player, 
+                4 - squirrel) and self.has_snow_line_requirements(state)
+        return True
+
     def has_wardrobe_key(self, state: CollectionState) -> bool:
         return state.has("Wardrobe Key", self.player)
 
@@ -115,6 +148,8 @@ class InscryptionRules:
         return state.has("Magnificus Eye", self.player)
 
     def has_useful_act1_items(self, state: CollectionState) -> bool:
+        if self.world.options.act1_randomize_nodes:
+            return state.has_all(("Oil Painting's Clover Plant", "Squirrel Totem Head", "Woodcarver Node"), self.player)
         return state.has_all(("Oil Painting's Clover Plant", "Squirrel Totem Head"), self.player)
 
     def has_all_epitaph_pieces(self, state: CollectionState) -> bool:
@@ -160,14 +195,14 @@ class InscryptionRules:
         return state.has("Quill", self.player) and self.has_gems_and_battery(state)
 
     def has_act1_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.enable_act_1:
-            if self.world.options.act_unlocks == ActUnlocks.option_items:
-                return state.has("Act 1", self.player)
+        if self.world.options.enable_act_1 and self.world.options.act_unlocks == ActUnlocks.option_items:
+            return state.has("Act 1", self.player)
         return True
 
     def beat_act1_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_1:
-            return self.has_act1_requirements(state) and state.has("Film Roll", self.player)
+            return self.has_act1_requirements(state) and state.has("Film Roll", self.player) and \
+                self.has_leshy_requirements(state)
         return True
 
     def has_act2_requirements(self, state: CollectionState) -> bool:
@@ -204,9 +239,9 @@ class InscryptionRules:
     def has_epilogue_requirements(self, state: CollectionState) -> bool:
         total_acts = self.world.options.enable_act_1.__int__() + self.world.options.enable_act_2.__int__() \
                     + self.world.options.enable_act_3.__int__()
-        act1 = self.world.options.enable_act_1.__bool__ and self.beat_act1_requirements(state)
-        act2 = self.world.options.enable_act_2.__bool__ and self.beat_act2_requirements(state)
-        act3 = self.world.options.enable_act_3.__bool__ and self.beat_act3_requirements(state)
+        act1 = self.world.options.enable_act_1.__bool__() and self.beat_act1_requirements(state)
+        act2 = self.world.options.enable_act_2.__bool__() and self.beat_act2_requirements(state)
+        act3 = self.world.options.enable_act_3.__bool__() and self.beat_act3_requirements(state)
         required_acts = self.world.options.goal.__int__() + 1
         if required_acts > total_acts: required_acts = total_acts # required acts always =< total acts
 

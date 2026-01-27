@@ -82,8 +82,15 @@ class InscryptionWorld(World):
         else:
             self.required_epitaph_pieces_name = "Epitaph Pieces"
             self.required_epitaph_pieces_count = 1
-
-        if self.options.painting_checks_balancing == PaintingChecksBalancing.option_balanced:
+        if self.options.act1_randomize_nodes:
+            self.all_items[6]["classification"] = ItemClassification.progression
+            self.all_items[9]["classification"] = ItemClassification.progression
+            self.all_items[11]["classification"] = ItemClassification.progression
+            self.all_items[12]["classification"] = ItemClassification.progression
+            self.all_items[13]["classification"] = ItemClassification.progression
+            self.all_items[14]["classification"] = ItemClassification.progression
+            self.all_items[15]["classification"] = ItemClassification.progression
+        elif self.options.painting_checks_balancing == PaintingChecksBalancing.option_balanced:
             self.all_items[6]["classification"] = ItemClassification.progression
             self.all_items[11]["classification"] = ItemClassification.progression
 
