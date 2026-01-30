@@ -164,24 +164,23 @@ class InscryptionWorld(World):
         if self.options.enable_act_1:
             if self.options.randomize_challenges == RandomizeChallenges.option_disable:
                 useful_items.pop(31) # progressive grizzlies
-                useful_items.pop(31) # progressive squirrel
-                useful_items.pop(30) # progressive candle
-                useful_items.pop(29) # more difficult challenge
-                useful_items.pop(28) # all totem battles challenge
-                useful_items.pop(27) # progressive tipped scales
-                useful_items.pop(26) # totem bosses challenge
-                useful_items.pop(25) # expensive pelts challenge
-                useful_items.pop(24) # smaller backpack challenge
+                useful_items.pop(30) # progressive squirrel
+                useful_items.pop(29) # progressive candle
+                useful_items.pop(28) # more difficult challenge
+                useful_items.pop(27) # all totem battles challenge
+                useful_items.pop(26) # progressive tipped scales
+                useful_items.pop(25) # totem bosses challenge
+                useful_items.pop(24) # expensive pelts challenge
+                useful_items.pop(23) # smaller backpack challenge
             elif self.options.randomize_challenges == RandomizeChallenges.option_no_grizzlies:
                 useful_items.pop(31) # progressive grizzlies
             if not self.options.randomize_nodes:
-                useful_items.pop(23) # goobert node
-                useful_items.pop(22) # campfire node
-                useful_items.pop(21) # backpack node
-                useful_items.pop(20) # sacrifice stones node
-                useful_items.pop(19) # bone altar node
-                useful_items.pop(18) # mycologists node
-                useful_items.pop(17) # trader node
+                useful_items.pop(22) # goobert node
+                useful_items.pop(21) # campfire node
+                useful_items.pop(20) # backpack node
+                useful_items.pop(19) # sacrifice stones node
+                useful_items.pop(18) # bone altar node
+                useful_items.pop(17) # mycologists node
                 useful_items.pop(16) # woodcarver node
             if self.options.randomize_challenges != RandomizeChallenges.option_disable:
                 useful_items.pop(13) # bee figurine (it's progressive now)

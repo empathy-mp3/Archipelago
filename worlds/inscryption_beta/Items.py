@@ -69,9 +69,6 @@ act1_items: List[ItemDict] = [
     {'name': "Woodcarver Node",
      'count': 1,
      'classification': ItemClassification.progression},
-    {'name': "Trader Node",
-     'count': 1,
-     'classification': ItemClassification.progression},
     {'name': "Mycologists Node",
      'count': 1,
      'classification': ItemClassification.progression},
@@ -115,7 +112,7 @@ act1_items: List[ItemDict] = [
      'count': 2,
      'classification': ItemClassification.progression},
     {'name': "Progressive Grizzlies",
-     'count': 3,
+     'count': 0,
      'classification': ItemClassification.progression}
 ]
 
