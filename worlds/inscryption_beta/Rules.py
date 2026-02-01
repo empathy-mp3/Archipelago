@@ -27,6 +27,8 @@ class InscryptionRules:
             "Act 1 - Magnificus Eye": self.has_dagger,
             "Act 1 - Clock Main Compartment": self.has_magnificus_eye,
             "Act 1 - Clock Upper Compartment": self.has_trapper_requirements,
+            "Act 1 - Woodlands Battle 2": self.has_later_woodlands_requirements,
+            "Act 1 - Woodlands Battle 3": self.has_later_woodlands_requirements,
             "Act 1 - Boss Prospector": self.has_prospector_requirements,
             "Act 1 - Wetlands Battle 1": self.has_wetlands_requirements,
             "Act 1 - Wetlands Battle 2": self.has_wetlands_requirements,
@@ -37,6 +39,17 @@ class InscryptionRules:
             "Act 1 - Snow Line Battle 3": self.has_snow_line_requirements,
             "Act 1 - Boss Trapper": self.has_trapper_requirements,
             "Act 1 - Boss Leshy": self.has_leshy_requirements,
+            "Act 1 - New Game Button": self.beat_act1_requirements,
+            "Act 1 - Trader Wolf Pelt": self.has_wolf_pelt_requirements,
+            "Act 1 - Trader Golden Pelt": self.has_golden_pelt_requirements,
+            "Act 1 - Consumable Check 1": self.has_backpack_node,
+            "Act 1 - Consumable Check 2": self.has_backpack_node,
+            "Act 1 - Consumable Check 3": self.has_backpack_node,
+            "Act 1 - Consumable Check 4": self.has_backpack_node,
+            "Act 1 - Consumable Check 5": self.has_backpack_node,
+            "Act 1 - Consumable Check 6": self.has_backpack_node,
+            "Act 1 - Consumable Check 7": self.has_backpack_node,
+            "Act 1 - Consumable Check 8": self.has_backpack_node,
             "Act 2 - Battle Prospector": self.has_camera_and_meat,
             "Act 2 - Battle Angler": self.has_camera_and_meat,
             "Act 2 - Battle Trapper": self.has_camera_and_meat,
@@ -117,31 +130,33 @@ class InscryptionRules:
         "Angler Hook": 1,
         "Oil Painting's Clover Plant": 1,
         "Dagger": 1,
-        "Mycologists Node": 1,
-        "Bone Altar Node": 1,
-        "Goobert Node": 1,
         "Woodcarver Node": 2,
         "Backpack Node": 2,
         "Sacrifice Stones Node": 3,
         "Campfire Node": 3,
-        "Smaller Backpack Challenge": 1,
-        "Totem Bosses Challenge": 3,
+        "Boss Totems Challenge": 3,
         "All Totem Battles Challenge": 3,
     }
 
     act1_boss_item_values: Dict[str, int] = {
         "Greater Smoke": 1,
-        "Totem Bosses Challenge": 3,
+        "Boss Totems Challenge": 3,
     }
 
     act1_progressive_values: Dict[str, list[int]] = {
         "More Difficult Challenge": [3, 3],
         "Progressive Candle": [3, 3],
         "Progressive Squirrel": [2, 3],
-        "Progressive Tipped Scales": [1, 1, 2, 3]
+        "Tipped Scales Challenge": [3, 2, 2]
     }
 
-    def act1_battle_requirements(self, state: CollectionState, amount: int, isBoss: bool) -> bool:
+    act1_area2_values: Dict[str, int] = {
+        "Mycologists Node": 1,
+        "Bone Altar Node": 1,
+        "Goobert Node": 1
+    }
+
+    def act1_battle_requirements(self, state: CollectionState, amount: int, isBoss: bool, area2) -> bool:
         enough = 0
         for item, value in self.act1_item_values.items():
             if state.has(item, self.player): enough += value
@@ -153,59 +168,87 @@ class InscryptionRules:
         if isBoss:
             for item, value in self.act1_boss_item_values.items():
                 if state.has(item, self.player): enough += value
+        if area2:
+            for item, value in self.act1_area2_values.items():
+                if state.has(item, self.player): enough += value
+        if state.has_all(["Squirrel Totem Head", "Woodcarver Node"], self.player): enough += 3
+        if state.has_all(["Smaller Backpack Challenge", "Backpack Node"], self.player): enough += 1
         return enough >= amount
 
+    def has_later_woodlands_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.randomize_nodes and \
+            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            return self.act1_battle_requirements(state, 1, True, False)
+        return True
+
     def has_prospector_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.randomize_nodes and self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 5, True)
-        elif self.world.options.randomize_nodes or self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 4, True)
+        if self.world.options.randomize_nodes and \
+            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            return self.act1_battle_requirements(state, 5, True, False)
+        elif self.world.options.randomize_nodes or \
+            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            return self.act1_battle_requirements(state, 4, True, False)
         return True
 
     def has_wetlands_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.randomize_nodes and self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 9, True)
+        if self.world.options.randomize_nodes and \
+            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            return self.act1_battle_requirements(state, 9, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 6, True)
+            return self.act1_battle_requirements(state, 6, True, True)
         elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 4, True)
+            return self.act1_battle_requirements(state, 4, True, False)
         return True
     
     def has_angler_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.randomize_nodes and self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 15, True)
+        if self.world.options.randomize_nodes and \
+            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            return self.act1_battle_requirements(state, 15, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 12, True)
+            return self.act1_battle_requirements(state, 12, True, True)
         elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 8, True)
+            return self.act1_battle_requirements(state, 8, True, True)
         return True
 
     def has_snow_line_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.randomize_nodes and self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 19, True)
+        if self.world.options.randomize_nodes and \
+            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            return self.act1_battle_requirements(state, 19, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 14, True)
+            return self.act1_battle_requirements(state, 14, True, True)
         elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 8, True)
+            return self.act1_battle_requirements(state, 8, True, True)
         return True
 
     def has_trapper_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.randomize_nodes and self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 25, True)
+        if self.world.options.randomize_nodes and \
+            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            return self.act1_battle_requirements(state, 25, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 20, True)
+            return self.act1_battle_requirements(state, 20, True, True)
         elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 12, True)
+            return self.act1_battle_requirements(state, 12, True, True)
         return True
 
     def has_leshy_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.randomize_nodes and self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 30, True)
+        if self.world.options.randomize_nodes and \
+            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            return self.act1_battle_requirements(state, 30, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 25, True)
+            return self.act1_battle_requirements(state, 25, True, True)
         elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 12, True)
+            return self.act1_battle_requirements(state, 12, True, True)
         return True
+
+    def has_backpack_node(self, state: CollectionState) -> bool:
+        return not self.world.options.randomize_nodes or state.has("Backpack Node", self.player)
+
+    def has_wolf_pelt_requirements(self, state: CollectionState) -> bool:
+        return self.has_snow_line_requirements(state) or \
+            (self.has_wetlands_requirements(state) and state.has("Pricey Pelts Challenge", self.player))
+
+    def has_golden_pelt_requirements(self, state: CollectionState) -> bool:
+        return self.has_trapper_requirements(state) and state.has("Pricey Pelts Challenge", self.player)
 
     def has_wardrobe_key(self, state: CollectionState) -> bool:
         return state.has("Wardrobe Key", self.player)

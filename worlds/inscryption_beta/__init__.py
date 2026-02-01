@@ -84,7 +84,6 @@ class InscryptionWorld(World):
             self.required_epitaph_pieces_count = 1
         if not self.options.randomize_nodes:
             self.all_items[6]["classification"] = ItemClassification.progression
-            self.all_items[9]["classification"] = ItemClassification.progression
             self.all_items[11]["classification"] = ItemClassification.progression
             self.all_items[12]["classification"] = ItemClassification.progression
             self.all_items[13]["classification"] = ItemClassification.progression
@@ -168,9 +167,9 @@ class InscryptionWorld(World):
                 useful_items.pop(29) # progressive candle
                 useful_items.pop(28) # more difficult challenge
                 useful_items.pop(27) # all totem battles challenge
-                useful_items.pop(26) # progressive tipped scales
-                useful_items.pop(25) # totem bosses challenge
-                useful_items.pop(24) # expensive pelts challenge
+                useful_items.pop(26) # tipped scales challenge
+                useful_items.pop(25) # boss totems challenge
+                useful_items.pop(24) # pricey pelts challenge
                 useful_items.pop(23) # smaller backpack challenge
             elif self.options.randomize_challenges == RandomizeChallenges.option_no_grizzlies:
                 useful_items.pop(31) # progressive grizzlies
@@ -252,6 +251,19 @@ class InscryptionWorld(World):
                 regions_to_locations["Act 3"].pop(32)
                 regions_to_locations["Act 3"].pop(31)
         if self.options.enable_act_1:
+            if self.options.randomize_challenges == RandomizeChallenges.option_disable:
+                    regions_to_locations["Act 1"].pop(37)
+                    regions_to_locations["Act 1"].pop(36)
+                    regions_to_locations["Act 1"].pop(35)
+                    regions_to_locations["Act 1"].pop(34)
+                    regions_to_locations["Act 1"].pop(33)
+                    regions_to_locations["Act 1"].pop(32)
+                    regions_to_locations["Act 1"].pop(31)
+                    regions_to_locations["Act 1"].pop(30)
+                    regions_to_locations["Act 1"].pop(29)
+                    regions_to_locations["Act 1"].pop(28)
+                    regions_to_locations["Act 1"].pop(27)
+                    regions_to_locations["Act 1"].pop(26)
             if not self.options.randomize_nodes and \
                 self.options.randomize_challenges == RandomizeChallenges.option_disable:
                     regions_to_locations["Act 1"].pop(25)
@@ -263,6 +275,15 @@ class InscryptionWorld(World):
                     regions_to_locations["Act 1"].pop(19)
                     regions_to_locations["Act 1"].pop(18)
                     regions_to_locations["Act 1"].pop(17)
+            elif not self.options.randomize_nodes and \
+                self.options.randomize_challenges != RandomizeChallenges.option_disable:
+                    regions_to_locations["Act 1"].pop(37)
+                    regions_to_locations["Act 1"].pop(36)
+                    regions_to_locations["Act 1"].pop(35)
+                    regions_to_locations["Act 1"].pop(34)
+                    regions_to_locations["Act 1"].pop(33)
+                    regions_to_locations["Act 1"].pop(32)
+                    regions_to_locations["Act 1"].pop(31)
         for region_name in used_regions.keys():
             self.multiworld.regions.append(Region(region_name, self.player, self.multiworld))
 
