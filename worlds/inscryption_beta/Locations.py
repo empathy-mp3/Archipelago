@@ -40,14 +40,15 @@ act1_locations = [
     "Act 1 - Trader Rabbit Pelt",
     "Act 1 - Trader Wolf Pelt",
     "Act 1 - Trader Golden Pelt",
-    "Act 1 - Consumable Check 1",
-    "Act 1 - Consumable Check 2",
-    "Act 1 - Consumable Check 3",
-    "Act 1 - Consumable Check 4",
-    "Act 1 - Consumable Check 5",
-    "Act 1 - Consumable Check 6",
-    "Act 1 - Consumable Check 7",
-    "Act 1 - Consumable Check 8",
+    "Act 1 - Woodlands Consumable Check 1",
+    "Act 1 - Woodlands Consumable Check 2",
+    "Act 1 - Woodlands Consumable Check 3",
+    "Act 1 - Wetlands Consumable Check 1",
+    "Act 1 - Wetlands Consumable Check 2",
+    "Act 1 - Wetlands Consumable Check 3",
+    "Act 1 - Snow Line Consumable Check 1",
+    "Act 1 - Snow Line Consumable Check 2",
+    "Act 1 - Snow Line Consumable Check 3",
 ]
 
 act2_locations = [

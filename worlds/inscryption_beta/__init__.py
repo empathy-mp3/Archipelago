@@ -252,6 +252,7 @@ class InscryptionWorld(World):
                 regions_to_locations["Act 3"].pop(31)
         if self.options.enable_act_1:
             if self.options.randomize_challenges == RandomizeChallenges.option_disable:
+                    regions_to_locations["Act 1"].pop(38)
                     regions_to_locations["Act 1"].pop(37)
                     regions_to_locations["Act 1"].pop(36)
                     regions_to_locations["Act 1"].pop(35)
@@ -277,11 +278,10 @@ class InscryptionWorld(World):
                     regions_to_locations["Act 1"].pop(17)
             elif not self.options.randomize_nodes and \
                 self.options.randomize_challenges != RandomizeChallenges.option_disable:
+                    regions_to_locations["Act 1"].pop(38)
                     regions_to_locations["Act 1"].pop(37)
-                    regions_to_locations["Act 1"].pop(36)
                     regions_to_locations["Act 1"].pop(35)
                     regions_to_locations["Act 1"].pop(34)
-                    regions_to_locations["Act 1"].pop(33)
                     regions_to_locations["Act 1"].pop(32)
                     regions_to_locations["Act 1"].pop(31)
         for region_name in used_regions.keys():
