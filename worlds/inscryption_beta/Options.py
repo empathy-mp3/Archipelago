@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from schema import Schema, Optional
-from Options import Toggle, Choice, DeathLinkMixin, StartInventoryPool, PerGameCommonOptions, DefaultOnToggle, Range, OptionCounter
+from Options import Toggle, Choice, DeathLinkMixin, DeathLink, StartInventoryPool, PerGameCommonOptions, DefaultOnToggle, Range, OptionCounter, OptionGroup
 
 
 class Act1DeathLinkBehaviour(Choice):
@@ -114,7 +114,7 @@ class ExtraSigils(Toggle):
 class RandomizeNodes(Toggle):
     """Some important nodes on the map in Act 1 won't do anything until they're received.
     Logic will expect nodes and challenges for later parts of the map."""
-    display_name = "Randomize Nodes and Challenges"
+    display_name = "Randomize Nodes"
 
 
 class RandomizeChallenges(Choice):
@@ -122,7 +122,7 @@ class RandomizeChallenges(Choice):
     Logic will expect nodes and challenges for later parts of the map.
     
     No Grizzlies: Randomize everything except Grizzly Bosses Challenge, which is disabled."""
-    display_name = "Randomize Nodes and Challenges"
+    display_name = "Randomize Challenges"
     option_disable = 0
     option_no_grizzlies = 1
     option_randomize = 2
@@ -244,6 +244,11 @@ class TrapTypeWeights(OptionCounter):
     odds for each trap type to be selected.
     If you don't want a specific trap type, omit it or set its weight to 0.
     Setting all weights to 0 is the same as setting trap_chance to 0.
+
+    Bleach Trap: All your cards in play lose their sigils.
+    Trash Trap: A useless card is added to your deck.
+    Deck Size Trap: Increases the Act 2 minimum deck size (which is normally 20) by 1
+    Reinforcements Trap: Fills the back row with enemy cards.
     
     Bleach Trap doesn't work in Act 2, and Deck Size Trap is exclusive to Act 2,
     so those won't be generated if relevant acts are disabled."""
@@ -263,28 +268,52 @@ class TrapTypeWeights(OptionCounter):
 
 
 @dataclass
-class InscryptionOptions(DeathLinkMixin, PerGameCommonOptions):
+class InscryptionOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
-    act1_death_link_behaviour: Act1DeathLinkBehaviour
     enable_act_1: EnableAct1
     enable_act_2: EnableAct2
     enable_act_3: EnableAct3
+    skip_tutorial: SkipTutorial
+    skip_epilogue: SkipEpilogue
     act_unlocks: ActUnlocks
     starting_act: StartingAct
     goal: Goal
+    death_link: DeathLink
+    act1_death_link_behaviour: Act1DeathLinkBehaviour
+    optional_death_card: OptionalDeathCard
     randomize_codes: RandomizeCodes
     randomize_deck: RandomizeDeck
     randomize_sigils: RandomizeSigils
     extra_sigils: ExtraSigils
+    painting_checks_balancing: PaintingChecksBalancing
     randomize_nodes: RandomizeNodes
     randomize_challenges: RandomizeChallenges
+    epitaph_pieces_randomization: EpitaphPiecesRandomization
     randomize_hammer: RandomizeHammer
     randomize_shortcuts: RandomizeShortcuts
     randomize_vessel_upgrades: RandomizeVesselUpgrades
-    optional_death_card: OptionalDeathCard
-    skip_tutorial: SkipTutorial
-    skip_epilogue: SkipEpilogue
-    epitaph_pieces_randomization: EpitaphPiecesRandomization
-    painting_checks_balancing: PaintingChecksBalancing
     trap_chance: TrapChance
     trap_type_weights: TrapTypeWeights
+
+
+inscryption_option_groups = [
+    OptionGroup("Item Randomization", [
+        PaintingChecksBalancing,
+        RandomizeNodes,
+        RandomizeChallenges,
+        EpitaphPiecesRandomization,
+        RandomizeHammer,
+        RandomizeShortcuts,
+        RandomizeVesselUpgrades,
+    ]),
+    OptionGroup("Other Randomization", [
+        RandomizeCodes,
+        RandomizeDeck,
+        RandomizeSigils,
+        ExtraSigils,
+    ]),
+    OptionGroup("Traps", [
+        TrapChance,
+        TrapTypeWeights,
+    ]),
+]

@@ -1,5 +1,5 @@
 from .Options import InscryptionOptions, ActUnlocks, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer, \
-    RandomizeShortcuts, RandomizeVesselUpgrades, StartingAct, RandomizeChallenges
+    RandomizeShortcuts, RandomizeVesselUpgrades, StartingAct, RandomizeChallenges, inscryption_option_groups
 from .Items import act1_items, act2_items, act3_items, act2_3_items, act_items, filler_items, trap_items, base_id, InscryptionItem
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
@@ -35,6 +35,8 @@ class InscrypWeb(WebWorld):
     tutorials = [guide_en, guide_fr]
 
     bug_report_page = "https://github.com/DrBibop/Archipelago_Inscryption/issues"
+
+    option_groups = inscryption_option_groups
 
 
 class InscryptionWorld(World):
