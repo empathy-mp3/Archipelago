@@ -344,6 +344,11 @@ class InscryptionRules:
     def has_transcendence_requirements(self, state: CollectionState) -> bool:
         return state.has("Quill", self.player) and self.has_gems_and_battery(state)
 
+    def has_goobert_painting_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.enable_act_1:
+            return self.has_trapper_requirements(state) and self.has_gems_and_battery(state)
+        return self.has_gems_and_battery(state)
+
     def has_act1_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_1 and self.world.options.act_unlocks == ActUnlocks.option_items:
             return state.has("Act 1", self.player)
@@ -415,7 +420,8 @@ class InscryptionRules:
                 if loc.name in self.location_rules:
                     loc.access_rule = self.location_rules[loc.name]
         if self.world.options.enable_act_1:
-            if self.world.options.randomize_nodes or self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            if self.world.options.randomize_nodes or \
+                self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
                 self.world.get_location("Act 1 - Painting 1").access_rule = self.has_prospector_requirements
                 self.world.get_location("Act 1 - Painting 2").access_rule = self.has_angler_requirements
                 self.world.get_location("Act 1 - Painting 3").access_rule = self.has_trapper_requirements
@@ -425,3 +431,7 @@ class InscryptionRules:
             if self.world.options.painting_checks_balancing == PaintingChecksBalancing.option_force_filler:
                 self.world.get_location("Act 1 - Painting 2").progress_type = LocationProgressType.EXCLUDED
                 self.world.get_location("Act 1 - Painting 3").progress_type = LocationProgressType.EXCLUDED
+        elif self.world.options.enable_act_3:
+            if self.world.options.randomize_nodes or \
+                self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+                self.world.get_location("Act 3 - Goobert's Painting").progress_type = LocationProgressType.EXCLUDED
