@@ -136,7 +136,6 @@ class InscryptionRules:
         "Backpack Node": 2,
         "Sacrifice Stones Node": 3,
         "Campfire Node": 3,
-        "Boss Totems Challenge": 3,
         "All Totem Battles Challenge": 3,
     }
 
@@ -154,8 +153,7 @@ class InscryptionRules:
 
     act1_area2_values: Dict[str, int] = {
         "Mycologists Node": 1,
-        "Bone Altar Node": 1,
-        "Goobert Node": 1
+        "Bone Altar Node": 1
     }
 
     def act1_battle_requirements(self, state: CollectionState, amount: int, isBoss: bool, area2) -> bool:
@@ -171,6 +169,7 @@ class InscryptionRules:
             for item, value in self.act1_boss_item_values.items():
                 if state.has(item, self.player): enough += value
         if area2:
+            if state.has_all(["Sacrifice Stones", "Goobert Node"], self.player): enough += 1
             for item, value in self.act1_area2_values.items():
                 if state.has(item, self.player): enough += value
         if state.has_all(["Squirrel Totem Head", "Woodcarver Node"], self.player): enough += 3
@@ -184,86 +183,87 @@ class InscryptionRules:
         return True
 
     def has_prospector_requirements(self, state: CollectionState) -> bool:
-        grizzly_points = 0
+        extra_points = 0
+        if state.has("All Totem Battles Challenge", self.player): extra_points += 3
         if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
             not state.has("Progressive Grizzlies", self.player):
-                grizzly_points = 10
+                extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 5 + grizzly_points, True, False)
+            return self.act1_battle_requirements(state, 5 + extra_points, True, False)
         elif self.world.options.randomize_nodes or \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 4 + grizzly_points, True, False)
+            return self.act1_battle_requirements(state, 4 + extra_points, True, False)
         return True
 
     def has_wetlands_requirements(self, state: CollectionState) -> bool:
-        grizzly_points = 0
+        extra_points = 0
         if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
             not state.has("Progressive Grizzlies", self.player):
-                grizzly_points = 10
+                extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 9 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 9 + extra_points, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 6 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 6 + extra_points, True, True)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 4, True, False)
         return True
     
     def has_angler_requirements(self, state: CollectionState) -> bool:
-        grizzly_points = 0
+        extra_points = 0
+        if state.has("All Totem Battles Challenge", self.player): extra_points += 3
         if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
             not state.has("Progressive Grizzlies", self.player, 2):
-                grizzly_points = 10
+                extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 15 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 15 + extra_points, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 12 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 12 + extra_points, True, True)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 8, True, True)
         return True
 
     def has_snow_line_requirements(self, state: CollectionState) -> bool:
-        grizzly_points = 0
+        extra_points = 0
         if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
             not state.has("Progressive Grizzlies", self.player, 2):
-                grizzly_points = 10
+                extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 19 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 19 + extra_points, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 14 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 14 + extra_points, True, True)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 8, True, True)
         return True
 
     def has_trapper_requirements(self, state: CollectionState) -> bool:
-        grizzly_points = 0
+        extra_points = 0
+        if state.has("All Totem Battles Challenge", self.player): extra_points += 3
         if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
             not state.has("Progressive Grizzlies", self.player, 3):
-                grizzly_points = 10
+                extra_points += 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 25 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 25 + extra_points, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 20 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 20 + extra_points, True, True)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 12, True, True)
         return True
 
     def has_leshy_requirements(self, state: CollectionState) -> bool:
-        grizzly_points = 0
-        if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
-            not state.has("Progressive Grizzlies", self.player, 3):
-                grizzly_points = 5
+        nope = 0
+        if state.has("All Totem Battles Challenge", self.player): nope += 3
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 30 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 30 + nope, True, True) and self.has_trapper_requirements(state)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 25 + grizzly_points, True, True)
+            return self.act1_battle_requirements(state, 25 + nope, True, True) and self.has_trapper_requirements(state)
         elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 12, True, True)
+            return self.act1_battle_requirements(state, 12 + nope, True, True) and self.has_trapper_requirements(state)
         return True
 
     def has_woodlands_consumable_requirements(self, state: CollectionState) -> bool:
