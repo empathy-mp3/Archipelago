@@ -225,6 +225,8 @@ class EpitaphPiecesRandomization(Choice):
 
 class PaintingChecksBalancing(Choice):
     """Generation options for the second and third painting checks in act 1.
+    If Randomize Nodes or Randomize Challenges are enabled, this has extra logic regardless of the option.
+    Force Filler still will work, though.
 
     - None: Adds no progression logic to these painting checks. They will all count as sphere 1 (early game checks).
 
