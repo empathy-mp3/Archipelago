@@ -256,7 +256,7 @@ class InscryptionRules:
         grizzly_points = 0
         if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
             not state.has("Progressive Grizzlies", self.player, 3):
-                grizzly_points = 10
+                grizzly_points = 5
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
             return self.act1_battle_requirements(state, 30 + grizzly_points, True, True)
@@ -301,6 +301,12 @@ class InscryptionRules:
         if self.world.options.randomize_nodes:
             return state.has_all(("Oil Painting's Clover Plant", "Squirrel Totem Head", "Woodcarver Node"), self.player)
         return state.has_all(("Oil Painting's Clover Plant", "Squirrel Totem Head"), self.player)
+    
+    def has_painting_2_requirements(self, state: CollectionState) -> bool:
+        return state.has("Oil Painting's Clover Plant", self.player) and self.has_angler_requirements(state)
+    
+    def has_painting_3_requirements(self, state: CollectionState) -> bool:
+        return state.has("Oil Painting's Clover Plant", self.player) and self.has_trapper_requirements(state)
 
     def has_all_epitaph_pieces(self, state: CollectionState) -> bool:
         return state.has(self.world.required_epitaph_pieces_name, self.player, self.world.required_epitaph_pieces_count)
@@ -423,8 +429,8 @@ class InscryptionRules:
             if self.world.options.randomize_nodes or \
                 self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
                 self.world.get_location("Act 1 - Painting 1").access_rule = self.has_prospector_requirements
-                self.world.get_location("Act 1 - Painting 2").access_rule = self.has_angler_requirements
-                self.world.get_location("Act 1 - Painting 3").access_rule = self.has_trapper_requirements
+                self.world.get_location("Act 1 - Painting 2").access_rule = self.has_painting_2_requirements
+                self.world.get_location("Act 1 - Painting 3").access_rule = self.has_painting_3_requirements
             elif self.world.options.painting_checks_balancing == PaintingChecksBalancing.option_balanced:
                 self.world.get_location("Act 1 - Painting 2").access_rule = self.has_useful_act1_items
                 self.world.get_location("Act 1 - Painting 3").access_rule = self.has_useful_act1_items
