@@ -113,15 +113,23 @@ class ExtraSigils(Toggle):
 
 class RandomizeNodes(Toggle):
     """Some important nodes on the map in Act 1 won't do anything until they're received.
-    Logic will expect nodes and challenges for later parts of the map."""
+    Logic will expect nodes and challenges for later parts of the map.
+    
+    This option will add checks for beating every battle on the map."""
     display_name = "Randomize Nodes"
 
 
 class RandomizeChallenges(Choice):
-    """Some Kaycee's Mod Challenges will be enabled by default and need items to remove them.
+    """Some Kaycee's Mod Challenges will be enabled by default in Act 1 and need items to remove them.
     Logic will expect nodes and challenges for later parts of the map.
+    Also, Grizzly Bosses Challenge has been split into 3 different Progressive Grizzlies,
+    and there's additional Tipped Scales Challenges that each tick down your health.
+
+    This option will add checks for trading in each type of pelt to the trader, a check for 
+    finishing Act 1, and new consumables in each map area (except the last one) that grant checks.
+    If Randomize Nodes is disabled, this will also add checks for each battle.
     
-    No Grizzlies: Randomize everything except Grizzly Bosses Challenge, which is disabled."""
+    - No Grizzlies: Randomize everything except Grizzly Bosses Challenge, which is disabled."""
     display_name = "Randomize Challenges"
     option_disable = 0
     option_no_grizzlies = 1

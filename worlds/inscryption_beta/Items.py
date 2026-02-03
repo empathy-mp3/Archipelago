@@ -1,5 +1,5 @@
 from BaseClasses import ItemClassification
-from typing import TypedDict, List
+from typing import TypedDict, List, Dict, Set
 
 from BaseClasses import Item
 
@@ -252,3 +252,9 @@ trap_items: List[ItemDict] = [
      'count': 1,
      'classification': ItemClassification.trap}
 ]
+
+item_groups: Dict[str, Set[str]] = {
+    "Grizzly Bosses Challenge": {"Progressive Grizzlies"},
+    "Single Candle Challenge": {"Progressive Candle"},
+    "Squirrel Fish Challenge": {"Progressive Squirrel"}
+}

@@ -1,6 +1,6 @@
 from .Options import InscryptionOptions, ActUnlocks, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer, \
     RandomizeShortcuts, RandomizeVesselUpgrades, StartingAct, RandomizeChallenges, inscryption_option_groups
-from .Items import act1_items, act2_items, act3_items, act2_3_items, act_items, filler_items, trap_items, base_id, InscryptionItem
+from .Items import act1_items, act2_items, act3_items, act2_3_items, act_items, filler_items, trap_items, item_groups, base_id, InscryptionItem
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
 from typing import Dict, Any
@@ -53,6 +53,7 @@ class InscryptionWorld(World):
     item_name_to_id = {item["name"]: i + base_id for i, item in enumerate(all_items)}
     all_locations = act1_locations + act2_locations + act3_locations
     location_name_to_id = {location: i + base_id for i, location in enumerate(all_locations)}
+    item_name_groups = item_groups
     required_epitaph_pieces_count = 9
     required_epitaph_pieces_name = "Epitaph Piece"
 
