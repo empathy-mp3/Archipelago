@@ -137,6 +137,8 @@ class InscryptionRules:
         "Sacrifice Stones Node": 3,
         "Campfire Node": 3,
         "All Totem Battles Challenge": 3,
+        "Bee Figurine": 3,
+        "Extra Candle": 3
     }
 
     act1_boss_item_values: Dict[str, int] = {
@@ -177,9 +179,11 @@ class InscryptionRules:
         return enough >= amount
 
     def has_later_woodlands_requirements(self, state: CollectionState) -> bool:
+        extra_points = 0
+        extra_points += state.count("Progressive Candle", self.player)*3
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 1, True, False)
+            return self.act1_battle_requirements(state, 1 + extra_points, True, False)
         return True
 
     def has_prospector_requirements(self, state: CollectionState) -> bool:
