@@ -181,9 +181,10 @@ class InscryptionRules:
     def has_later_woodlands_requirements(self, state: CollectionState) -> bool:
         extra_points = 0
         extra_points += state.count("Progressive Candle", self.player)*3
+        extra_points += state.count("Backpack Node", self.player)*2
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 1 + extra_points, True, False)
+            return self.act1_battle_requirements(state, 3 + extra_points, True, False)
         return True
 
     def has_prospector_requirements(self, state: CollectionState) -> bool:
@@ -194,7 +195,7 @@ class InscryptionRules:
                 extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 5 + extra_points, True, False)
+            return self.act1_battle_requirements(state, 6 + extra_points, True, False)
         elif self.world.options.randomize_nodes or \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
             return self.act1_battle_requirements(state, 4 + extra_points, True, False)
@@ -207,11 +208,11 @@ class InscryptionRules:
                 extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 9 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 11 + extra_points, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 6 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 7 + extra_points, True, True)
         elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 4, True, False)
+            return self.act1_battle_requirements(state, 5, True, False)
         return True
     
     def has_angler_requirements(self, state: CollectionState) -> bool:
