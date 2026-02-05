@@ -195,24 +195,20 @@ class InscryptionRules:
                 extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 6 + extra_points, True, False)
+            return self.act1_battle_requirements(state, 6 + extra_points, True, False) and self.has_later_woodlands_requirements(state)
         elif self.world.options.randomize_nodes or \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 4 + extra_points, True, False)
+            return self.act1_battle_requirements(state, 4 + extra_points, True, False) and self.has_later_woodlands_requirements(state)
         return True
 
     def has_wetlands_requirements(self, state: CollectionState) -> bool:
-        extra_points = 0
-        if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
-            not state.has("Progressive Grizzlies", self.player):
-                extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 12 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 12, True, True) and self.has_prospector_requirements(state)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 8 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 8, True, True) and self.has_prospector_requirements(state)
         elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 5, True, False)
+            return self.act1_battle_requirements(state, 5, True, False) and self.has_prospector_requirements(state)
         return True
     
     def has_angler_requirements(self, state: CollectionState) -> bool:
@@ -231,17 +227,13 @@ class InscryptionRules:
         return True
 
     def has_snow_line_requirements(self, state: CollectionState) -> bool:
-        extra_points = 0
-        if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
-            not state.has("Progressive Grizzlies", self.player, 2):
-                extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 21 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 21, True, True) and self.has_angler_requirements(state)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 16 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 16, True, True) and self.has_angler_requirements(state)
         elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 8, True, True)
+            return self.act1_battle_requirements(state, 8, True, True) and self.has_angler_requirements(state)
         return True
 
     def has_trapper_requirements(self, state: CollectionState) -> bool:
