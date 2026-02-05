@@ -99,7 +99,7 @@ class InscryptionRules:
             "Act 3 - Trader 3": self.has_pelts(3),
             "Act 3 - Trader 4": self.has_pelts(4),
             "Act 3 - Trader 5": self.has_pelts(5),
-            "Act 3 - Goobert's Painting": self.has_gems_and_battery,
+            "Act 3 - Goobert's Painting": self.has_goobert_painting_requirements,
             "Act 3 - The Great Transcendence": self.has_transcendence_requirements,
             "Act 3 - Boss Mycologists": self.has_mycologists_boss_requirements,
             "Act 3 - Bone Lord Room": self.has_bone_lord_room_requirements,
