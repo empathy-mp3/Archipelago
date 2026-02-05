@@ -147,10 +147,10 @@ class InscryptionRules:
     }
 
     act1_progressive_values: Dict[str, list[int]] = {
-        "More Difficult Challenge": [3, 3],
+        "More Difficult Challenge": [5, 5],
         "Progressive Candle": [3, 3],
         "Progressive Squirrel": [2, 3],
-        "Tipped Scales Challenge": [3, 2, 2]
+        "Tipped Scales Challenge": [5, 4, 3]
     }
 
     act1_area2_values: Dict[str, int] = {
@@ -208,9 +208,9 @@ class InscryptionRules:
                 extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 11 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 12 + extra_points, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 7 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 8 + extra_points, True, True)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 5, True, False)
         return True
@@ -223,9 +223,9 @@ class InscryptionRules:
                 extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 15 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 17 + extra_points, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 12 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 13 + extra_points, True, True)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 8, True, True)
         return True
@@ -237,9 +237,9 @@ class InscryptionRules:
                 extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 19 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 21 + extra_points, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 14 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 16 + extra_points, True, True)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 8, True, True)
         return True
@@ -252,9 +252,9 @@ class InscryptionRules:
                 extra_points += 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 25 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 27 + extra_points, True, True)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 20 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 22 + extra_points, True, True)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 12, True, True)
         return True
@@ -264,9 +264,9 @@ class InscryptionRules:
         if state.has("All Totem Battles Challenge", self.player): nope += 3
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 30 + nope, True, True) and self.has_trapper_requirements(state)
+            return self.act1_battle_requirements(state, 33 + nope, True, True) and self.has_trapper_requirements(state)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 25 + nope, True, True) and self.has_trapper_requirements(state)
+            return self.act1_battle_requirements(state, 27 + nope, True, True) and self.has_trapper_requirements(state)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 12 + nope, True, True) and self.has_trapper_requirements(state)
         return True
