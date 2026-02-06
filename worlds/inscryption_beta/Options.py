@@ -209,6 +209,21 @@ class SkipEpilogue(Toggle):
     display_name = "Skip Epilogue"
 
 
+class Act2RandomizeBridge(Choice):
+    """Choose whether the bridge in Act 2 should be randomized.
+
+    - Disable: The bridge will require beating one Scrybe, as normal.
+
+    - Enable: The bridge will be repaired upon receiving "Act 2 Bridge Repair".
+
+    - Left Side Start: Like Enable, but you start on the left side of the bridge rather than the right."""
+    display_name = "Act 2 Randomize Bridge"
+    option_disable = 0
+    option_enable = 1
+    option_left_side_start = 2
+    default = 0
+
+
 class EpitaphPiecesRandomization(Choice):
     """Determines how epitaph pieces in act 2 are randomized. This can affect your chances of getting stuck.
 
@@ -299,6 +314,7 @@ class InscryptionOptions(PerGameCommonOptions):
     painting_checks_balancing: PaintingChecksBalancing
     randomize_nodes: RandomizeNodes
     randomize_challenges: RandomizeChallenges
+    act2_randomize_bridge: Act2RandomizeBridge
     epitaph_pieces_randomization: EpitaphPiecesRandomization
     randomize_hammer: RandomizeHammer
     randomize_shortcuts: RandomizeShortcuts
@@ -312,6 +328,7 @@ inscryption_option_groups = [
         PaintingChecksBalancing,
         RandomizeNodes,
         RandomizeChallenges,
+        Act2RandomizeBridge,
         EpitaphPiecesRandomization,
         RandomizeHammer,
         RandomizeShortcuts,

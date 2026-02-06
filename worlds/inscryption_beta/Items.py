@@ -153,7 +153,10 @@ act2_items: List[ItemDict] = [
      'classification': ItemClassification.useful},
     {'name': "Dock's Clover Plant",
      'count': 1,
-     'classification': ItemClassification.useful}
+     'classification': ItemClassification.useful},
+    {'name': "Act 2 Bridge Repair",
+     'count': 1,
+     'classification': ItemClassification.progression}
 ]
 
 

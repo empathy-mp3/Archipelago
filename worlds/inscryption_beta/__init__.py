@@ -1,6 +1,8 @@
-from .Options import InscryptionOptions, ActUnlocks, EpitaphPiecesRandomization, PaintingChecksBalancing, RandomizeHammer, \
-    RandomizeShortcuts, RandomizeVesselUpgrades, StartingAct, RandomizeChallenges, inscryption_option_groups
-from .Items import act1_items, act2_items, act3_items, act2_3_items, act_items, filler_items, trap_items, item_groups, base_id, InscryptionItem
+from .Options import InscryptionOptions, ActUnlocks, EpitaphPiecesRandomization, PaintingChecksBalancing, \
+    RandomizeHammer, Act2RandomizeBridge, RandomizeShortcuts, RandomizeVesselUpgrades, StartingAct, \
+    RandomizeChallenges, inscryption_option_groups
+from .Items import act1_items, act2_items, act3_items, act2_3_items, act_items, filler_items, \
+    trap_items, item_groups, base_id, InscryptionItem
 from .Locations import act1_locations, act2_locations, act3_locations, regions_to_locations
 from .Regions import inscryption_regions_all
 from typing import Dict, Any
@@ -159,6 +161,8 @@ class InscryptionWorld(World):
                 if self.options.randomize_shortcuts == RandomizeShortcuts.option_vanilla:
                     included_locations -= 3
         if self.options.enable_act_2:
+            if self.options.act2_randomize_bridge == Act2RandomizeBridge.option_disable:
+                useful_items.pop(len(act1_items) + 13)
             if self.options.epitaph_pieces_randomization == EpitaphPiecesRandomization.option_all_pieces:
                 useful_items.pop(len(act1_items) + 3)
             else:
@@ -316,6 +320,7 @@ class InscryptionWorld(World):
             "randomize_nodes",
             "randomize_challenges",
             "randomize_hammer",
+            "act2_randomize_bridge",
             "randomize_shortcuts",
             "randomize_vessel_upgrades",
             "optional_death_card",
