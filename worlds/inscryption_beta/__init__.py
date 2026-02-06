@@ -255,17 +255,17 @@ class InscryptionWorld(World):
                 regions_to_locations["Act 3"].pop(31)
         if self.options.enable_act_1:
             if self.options.randomize_challenges == RandomizeChallenges.option_disable:
-                    regions_to_locations["Act 1"].pop(38)
+                    regions_to_locations["Act 1"].pop(38) #consumable checks
                     regions_to_locations["Act 1"].pop(37)
                     regions_to_locations["Act 1"].pop(36)
                     regions_to_locations["Act 1"].pop(35)
                     regions_to_locations["Act 1"].pop(34)
                     regions_to_locations["Act 1"].pop(33)
-                    regions_to_locations["Act 1"].pop(32)
+                    regions_to_locations["Act 1"].pop(32) # pelts
                     regions_to_locations["Act 1"].pop(31)
                     regions_to_locations["Act 1"].pop(30)
-                    regions_to_locations["Act 1"].pop(29)
-                    regions_to_locations["Act 1"].pop(28)
+                    regions_to_locations["Act 1"].pop(29) # new game button
+                    regions_to_locations["Act 1"].pop(28) # free checks
                     regions_to_locations["Act 1"].pop(27)
                     regions_to_locations["Act 1"].pop(26)
             if not self.options.randomize_nodes and \
@@ -283,10 +283,10 @@ class InscryptionWorld(World):
                 self.options.randomize_challenges != RandomizeChallenges.option_disable:
                     regions_to_locations["Act 1"].pop(38)
                     regions_to_locations["Act 1"].pop(37)
+                    regions_to_locations["Act 1"].pop(36)
                     regions_to_locations["Act 1"].pop(35)
                     regions_to_locations["Act 1"].pop(34)
-                    regions_to_locations["Act 1"].pop(32)
-                    regions_to_locations["Act 1"].pop(31)
+                    regions_to_locations["Act 1"].pop(33)
         for region_name in used_regions.keys():
             self.multiworld.regions.append(Region(region_name, self.player, self.multiworld))
 

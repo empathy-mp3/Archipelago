@@ -36,19 +36,19 @@ act1_locations = [
     "Act 1 - Snow Line Battle 1",
     "Act 1 - Snow Line Battle 2",
     "Act 1 - Snow Line Battle 3",
+    "Act 1 - Free Teeth Skull",
+    "Act 1 - Tarot Card below Figurines",
+    "Act 1 - Card by Rulebook",
     "Act 1 - New Game Button",
     "Act 1 - Trader Rabbit Pelt",
     "Act 1 - Trader Wolf Pelt",
     "Act 1 - Trader Golden Pelt",
     "Act 1 - Woodlands Consumable Check 1",
     "Act 1 - Woodlands Consumable Check 2",
-    "Act 1 - Woodlands Consumable Check 3",
     "Act 1 - Wetlands Consumable Check 1",
     "Act 1 - Wetlands Consumable Check 2",
-    "Act 1 - Wetlands Consumable Check 3",
     "Act 1 - Snow Line Consumable Check 1",
     "Act 1 - Snow Line Consumable Check 2",
-    "Act 1 - Snow Line Consumable Check 3",
 ]
 
 act2_locations = [
