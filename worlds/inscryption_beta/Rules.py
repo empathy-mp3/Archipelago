@@ -1,6 +1,6 @@
 from typing import Dict, Callable, TYPE_CHECKING
 from BaseClasses import CollectionState, LocationProgressType
-from .Options import ActUnlocks, Goal, PaintingChecksBalancing, RandomizeChallenges
+from .Options import ActUnlocks, Goal, PaintingChecksBalancing, RandomizeChallenges, Act2RandomizeBridge
 
 if TYPE_CHECKING:
     from . import InscryptionWorld
@@ -49,20 +49,41 @@ class InscryptionRules:
             "Act 1 - Wetlands Consumable Check 2": self.has_wetlands_consumable_requirements,
             "Act 1 - Snow Line Consumable Check 1": self.has_snow_line_consumable_requirements,
             "Act 1 - Snow Line Consumable Check 2": self.has_snow_line_consumable_requirements,
-            "Act 2 - Battle Prospector": self.has_camera_and_meat,
-            "Act 2 - Battle Angler": self.has_camera_and_meat,
-            "Act 2 - Battle Trapper": self.has_camera_and_meat,
+            "Act 2 - Battle Sawyer": self.has_act2_right_side_requirements,
+            "Act 2 - Battle Royal": self.has_act2_right_side_requirements,
+            "Act 2 - Battle Kaycee": self.has_act2_right_side_requirements,
+            "Act 2 - Dock Chest": self.has_act2_right_side_requirements,
+            "Act 2 - Forest Cabin Chest": self.has_act2_right_side_requirements,
+            "Act 2 - Cabin Wardrobe Drawer": self.has_act2_right_side_requirements,
+            "Act 2 - Cabin Safe": self.has_act2_right_side_requirements,
+            "Act 2 - Crypt Casket 1": self.has_act2_right_side_requirements,
+            "Act 2 - Crypt Casket 2": self.has_act2_right_side_requirements,
+            "Act 2 - Crypt Well": self.has_act2_right_side_requirements,
+            "Act 2 - Camera Replica": self.has_act2_right_side_requirements,
+            "Act 2 - Clover": self.has_act2_right_side_requirements,
+            "Act 2 - Epitaph Piece 1": self.has_act2_right_side_requirements,
+            "Act 2 - Epitaph Piece 2": self.has_act2_right_side_requirements,
+            "Act 2 - Epitaph Piece 3": self.has_act2_right_side_requirements,
+            "Act 2 - Epitaph Piece 4": self.has_act2_right_side_requirements,
+            "Act 2 - Epitaph Piece 5": self.has_act2_right_side_requirements,
+            "Act 2 - Epitaph Piece 6": self.has_act2_right_side_requirements,
+            "Act 2 - Epitaph Piece 7": self.has_act2_right_side_requirements,
+            "Act 2 - Epitaph Piece 8": self.has_act2_right_side_requirements,
+            "Act 2 - Epitaph Piece 9": self.has_act2_right_side_requirements,
+            "Act 2 - Battle Prospector": self.has_forest_requirements,
+            "Act 2 - Battle Angler": self.has_forest_requirements,
+            "Act 2 - Battle Trapper": self.has_forest_requirements,
             "Act 2 - Battle Pike Mage": self.has_tower_requirements,
             "Act 2 - Battle Goobert": self.has_tower_requirements,
             "Act 2 - Battle Lonely Wizard": self.has_tower_requirements,
             "Act 2 - Battle Inspector": self.has_act2_bridge_requirements,
             "Act 2 - Battle Melter": self.has_act2_bridge_requirements,
             "Act 2 - Battle Dredger": self.has_act2_bridge_requirements,
-            "Act 2 - Forest Meadow Chest": self.has_camera_and_meat,
+            "Act 2 - Forest Meadow Chest": self.has_forest_requirements,
             "Act 2 - Tower Chest 1": self.has_act2_bridge_requirements,
             "Act 2 - Tower Chest 2": self.has_tower_requirements,
             "Act 2 - Tower Chest 3": self.has_tower_requirements,
-            "Act 2 - Tentacle": self.has_tower_requirements,
+            "Act 2 - Tentacle": self.has_tower_and_right_requirements,
             "Act 2 - Factory Trash Can": self.has_act2_bridge_requirements,
             "Act 2 - Factory Drawer 1": self.has_act2_bridge_requirements,
             "Act 2 - Factory Drawer 2": self.has_act2_bridge_requirements,
@@ -71,15 +92,15 @@ class InscryptionRules:
             "Act 2 - Factory Chest 3": self.has_act2_bridge_requirements,
             "Act 2 - Factory Chest 4": self.has_act2_bridge_requirements,
             "Act 2 - Monocle": self.has_act2_bridge_requirements,
-            "Act 2 - Boss Grimora": self.has_all_epitaph_pieces,
-            "Act 2 - Boss Leshy": self.has_camera_and_meat,
+            "Act 2 - Boss Grimora": self.has_grimora_requirements,
+            "Act 2 - Boss Leshy": self.has_forest_requirements,
             "Act 2 - Boss Magnificus": self.has_tower_requirements,
             "Act 2 - Boss P03": self.has_act2_bridge_requirements,
-            "Act 2 - Bone Lord Femur": self.has_obol,
-            "Act 2 - Bone Lord Horn": self.has_obol,
-            "Act 2 - Bone Lord Holo Key": self.has_obol,
-            "Act 2 - Mycologists Holo Key": self.has_tower_requirements,  # Could need money
-            "Act 2 - Ancient Obol": self.has_tower_requirements,  # Need money for the pieces? Use the tower mannequin.
+            "Act 2 - Bone Lord Femur": self.has_bone_lord_stairs_requirements,
+            "Act 2 - Bone Lord Horn": self.has_bone_lord_stairs_requirements,
+            "Act 2 - Bone Lord Holo Key": self.has_bone_lord_stairs_requirements,
+            "Act 2 - Mycologists Holo Key": self.has_tower_and_right_requirements,  # Could need money
+            "Act 2 - Ancient Obol": self.has_tower_and_right_requirements,  # Need money for the pieces? Use the tower mannequin.
             "Act 3 - Boss Photographer": self.has_inspectometer_battery,
             "Act 3 - Boss Archivist": self.has_battery_and_quill,
             "Act 3 - Boss Unfinished": self.has_gems_and_battery,
@@ -317,8 +338,29 @@ class InscryptionRules:
     def has_epitaphs_and_forest_items(self, state: CollectionState) -> bool:
         return self.has_camera_and_meat(state) and self.has_all_epitaph_pieces(state)
 
+    def has_act2_right_side_requirements(self, state: CollectionState) -> bool:
+        if (self.world.options.act2_randomize_bridge == Act2RandomizeBridge.option_left_side_start):
+            return state.has("Act 2 Bridge Repair", self.player)
+        return True
+
     def has_act2_bridge_requirements(self, state: CollectionState) -> bool:
+        if (self.world.options.act2_randomize_bridge == Act2RandomizeBridge.option_enable):
+            return state.has("Act 2 Bridge Repair", self.player)
+        elif (self.world.options.act2_randomize_bridge == Act2RandomizeBridge.option_left_side_start):
+            return True
         return self.has_camera_and_meat(state) or self.has_all_epitaph_pieces(state)
+
+    def has_forest_requirements(self, state: CollectionState) -> bool:
+        return self.has_camera_and_meat(state) and self.has_act2_right_side_requirements(state)
+
+    def has_grimora_requirements(self, state: CollectionState) -> bool:
+        return self.has_all_epitaph_pieces(state) and self.has_act2_right_side_requirements(state)
+
+    def has_bone_lord_stairs_requirements(self, state: CollectionState) -> bool:
+        return self.has_obol(state) and self.has_act2_right_side_requirements(state)
+    
+    def has_tower_and_right_requirements(self, state: CollectionState) -> bool:
+        return self.has_tower_requirements(state) and self.has_act2_right_side_requirements(state)
 
     def has_tower_requirements(self, state: CollectionState) -> bool:
         return self.has_monocle(state) and self.has_act2_bridge_requirements(state)
