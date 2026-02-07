@@ -165,7 +165,7 @@ class InscryptionRules:
     }
 
     act1_progressive_values: Dict[str, list[int]] = {
-        "More Difficult Challenge": [5, 5],
+        "More Difficult Challenge": [4, 4],
         "Progressive Candle": [3, 3],
         "Progressive Squirrel": [2, 3],
         "Tipped Scales Challenge": [5, 4, 3]
@@ -176,7 +176,7 @@ class InscryptionRules:
         "Bone Altar Node": 1
     }
 
-    def act1_battle_requirements(self, state: CollectionState, amount: int, isBoss: bool, area2) -> bool:
+    def act1_battle_requirements(self, state: CollectionState, amount: int, isBoss: bool, area2: bool) -> bool:
         enough = 0
         for item, value in self.act1_item_values.items():
             if state.has(item, self.player): enough += value
@@ -195,6 +195,20 @@ class InscryptionRules:
         if state.has_all(["Squirrel Totem Head", "Woodcarver Node"], self.player): enough += 3
         if state.has_all(["Smaller Backpack Challenge", "Backpack Node"], self.player): enough += 1
         return enough >= amount
+    
+    def bypass_grizzly_requirements(self, state: CollectionState, boss_number: int) -> bool:
+        if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
+            not state.has("Progressive Grizzlies", self.player, boss_number):
+            required_count = boss_number - state.count("Progressive Grizzlies", self.player)
+            if required_count == 1:
+                return state.has_any(["Dagger", "Angler Hook"], self.player)
+            elif not self.world.options.randomize_nodes:
+                return state.has("Dagger", self.player)
+            elif required_count == 2:
+                return state.has("Dagger", self.player) and state.has_any(["Angler Hook", "Backpack Node"], self.player)
+            elif required_count == 3:
+                return state.has_all(["Dagger", "Backpack Node"], self.player)
+        return True
 
     def has_later_woodlands_requirements(self, state: CollectionState) -> bool:
         extra_points = 0
@@ -213,10 +227,12 @@ class InscryptionRules:
                 extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 6 + extra_points, True, False) and self.has_later_woodlands_requirements(state)
+            return self.act1_battle_requirements(state, 6 + extra_points, True, False) and \
+                self.has_later_woodlands_requirements(state) and self.bypass_grizzly_requirements(state, 1)
         elif self.world.options.randomize_nodes or \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 4 + extra_points, True, False) and self.has_later_woodlands_requirements(state)
+            return self.act1_battle_requirements(state, 4 + extra_points, True, False) and \
+                self.has_later_woodlands_requirements(state) and self.bypass_grizzly_requirements(state, 1)
         return True
 
     def has_wetlands_requirements(self, state: CollectionState) -> bool:
@@ -237,9 +253,11 @@ class InscryptionRules:
                 extra_points = 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 17 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 17 + extra_points, True, True) and \
+                self.bypass_grizzly_requirements(state, 2)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 13 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 13 + extra_points, True, True) and \
+                self.bypass_grizzly_requirements(state, 2)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 8, True, True)
         return True
@@ -262,9 +280,11 @@ class InscryptionRules:
                 extra_points += 10
         if self.world.options.randomize_nodes and \
             self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 27 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 27 + extra_points, True, True) and \
+                self.bypass_grizzly_requirements(state, 3)
         elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 22 + extra_points, True, True)
+            return self.act1_battle_requirements(state, 22 + extra_points, True, True) and \
+                self.bypass_grizzly_requirements(state, 3)
         elif self.world.options.randomize_nodes:
             return self.act1_battle_requirements(state, 12, True, True)
         return True
