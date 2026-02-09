@@ -150,6 +150,9 @@ class InscryptionWorld(World):
         or not (self.options.enable_act_2 or self.options.enable_act_3):
             useful_items.pop(len(act1_items) + len(act2_items) + len(act3_items))
         if self.options.enable_act_3:
+            if not self.options.act3_overhaul:
+                useful_items.pop(len(act1_items) + len(act2_items) + 18)
+                useful_items.pop(len(act1_items) + len(act2_items) + 17)
             if self.options.randomize_vessel_upgrades == RandomizeVesselUpgrades.option_vanilla:
                 useful_items.pop(len(act1_items) + len(act2_items) + 16)
                 useful_items.pop(len(act1_items) + len(act2_items) + 15)
@@ -248,6 +251,8 @@ class InscryptionWorld(World):
             del used_regions["Act 3"]
             used_regions["Menu"].remove("Act 3")
         if self.options.enable_act_3:
+            if not self.options.act3_overhaul:
+                regions_to_locations["Act 3"].pop(38)
             if self.options.randomize_vessel_upgrades == RandomizeVesselUpgrades.option_vanilla:
                 regions_to_locations["Act 3"].pop(37)
                 regions_to_locations["Act 3"].pop(36)
@@ -321,6 +326,7 @@ class InscryptionWorld(World):
             "randomize_challenges",
             "randomize_hammer",
             "act2_randomize_bridge",
+            "act3_overhaul",
             "randomize_shortcuts",
             "randomize_vessel_upgrades",
             "optional_death_card",
