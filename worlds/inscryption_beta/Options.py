@@ -224,6 +224,16 @@ class Act2RandomizeBridge(Choice):
     default = 0
 
 
+class Act3Overhaul(Toggle):
+    """Change up the standard progression of Act 3 in this randomizer to be less linear.
+    - Inspectometer Battery will no longer lock you out of the game map,
+    and only prevents access to the Foul Backwater area.
+    - There'll be an "Act 3 Bridge Repair" item that repairs the bridge.
+    - There'll be a "Respledent Bastion Gate" item that unlocks that gate,
+    and the satellite dish that normally unlocks it will be a check."""
+    display_name = "Act 3 Overhaul"
+
+
 class EpitaphPiecesRandomization(Choice):
     """Determines how epitaph pieces in act 2 are randomized. This can affect your chances of getting stuck.
 
@@ -317,6 +327,7 @@ class InscryptionOptions(PerGameCommonOptions):
     act2_randomize_bridge: Act2RandomizeBridge
     epitaph_pieces_randomization: EpitaphPiecesRandomization
     randomize_hammer: RandomizeHammer
+    act3_overhaul: Act3Overhaul
     randomize_shortcuts: RandomizeShortcuts
     randomize_vessel_upgrades: RandomizeVesselUpgrades
     trap_chance: TrapChance
@@ -331,6 +342,7 @@ inscryption_option_groups = [
         Act2RandomizeBridge,
         EpitaphPiecesRandomization,
         RandomizeHammer,
+        Act3Overhaul,
         RandomizeShortcuts,
         RandomizeVesselUpgrades,
     ]),

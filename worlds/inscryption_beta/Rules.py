@@ -102,15 +102,15 @@ class InscryptionRules:
             "Act 2 - Mycologists Holo Key": self.has_tower_and_right_requirements,  # Could need money
             "Act 2 - Ancient Obol": self.has_tower_and_right_requirements,  # Need money for the pieces? Use the tower mannequin.
             "Act 3 - Boss Photographer": self.has_inspectometer_battery,
-            "Act 3 - Boss Archivist": self.has_battery_and_quill,
-            "Act 3 - Boss Unfinished": self.has_gems_and_battery,
-            "Act 3 - Boss G0lly": self.has_gems_and_battery,
-            "Act 3 - Extra Battery": self.has_inspectometer_battery,  # Hard to miss but soft lock still possible.
-            "Act 3 - Nano Armor Generator": self.has_gems_and_battery,  # Costs money, so can need multiple battles.
-            "Act 3 - Shop Holo Pelt": self.has_gems_and_battery,  # Costs money, so can need multiple battles.
-            "Act 3 - Middle Holo Pelt": self.has_inspectometer_battery,  # Can be reached without but possible soft lock
+            "Act 3 - Boss Archivist": self.has_archivist_requirements,
+            "Act 3 - Boss Unfinished": self.has_gaudy_gem_land_requirements,
+            "Act 3 - Boss G0lly": self.has_resplendent_bastion_requirements,
+            "Act 3 - Extra Battery": self.has_act3_missable_check_requirements,  # Hard to miss but soft lock still possible.
+            "Act 3 - Nano Armor Generator": self.has_act3_shop_requirements,  # Costs money, so can need multiple battles.
+            "Act 3 - Shop Holo Pelt": self.has_act3_shop_requirements,  # Costs money, so can need multiple battles.
+            "Act 3 - Middle Holo Pelt": self.has_act3_missable_check_requirements,  # Can be reached without but possible soft lock
             "Act 3 - Forest Holo Pelt": self.has_inspectometer_battery,
-            "Act 3 - Crypt Holo Pelt": self.has_inspectometer_battery,
+            "Act 3 - Crypt Holo Pelt": self.has_filthy_corpse_world_requirements,
             "Act 3 - Tower Holo Pelt": self.has_gems_and_battery,
             "Act 3 - Trader 1": self.has_pelts(1),
             "Act 3 - Trader 2": self.has_pelts(2),
@@ -122,22 +122,20 @@ class InscryptionRules:
             "Act 3 - Boss Mycologists": self.has_mycologists_boss_requirements,
             "Act 3 - Bone Lord Room": self.has_bone_lord_room_requirements,
             "Act 3 - Luke's File Entry 1": self.has_battery_and_quill,
-            "Act 3 - Luke's File Entry 2": self.has_battery_and_quill,
-            "Act 3 - Luke's File Entry 3": self.has_battery_and_quill,
-            "Act 3 - Luke's File Entry 4": self.has_transcendence_requirements,
-            "Act 3 - Well": self.has_inspectometer_battery,
-            "Act 3 - Gems Drone": self.has_inspectometer_battery,
-            "Act 3 - Clock": self.has_gems_and_battery,  # Can be brute-forced, but the solution needs those items.
+            "Act 3 - Luke's File Entry 2": self.has_bridge_and_quill,
+            "Act 3 - Luke's File Entry 3": self.has_bridge_and_quill,
+            "Act 3 - Luke's File Entry 4": self.has_gem_land_access_and_quill,
+            "Act 3 - Well": self.has_filthy_corpse_world_requirements,
+            "Act 3 - Gems Drone": self.has_act3_bridge_requirements,
+            "Act 3 - Clock": self.has_ourobot_requirements,  # Can be brute-forced, but the solution needs those items.
             "Act 3 - Foul Backwater Shortcut": self.has_inspectometer_battery,
-            "Act 3 - Filthy Corpse World Shortcut": self.has_inspectometer_battery,
-            "Act 3 - Gaudy Gem Land Shortcut": self.has_gems_and_battery, 
-            "Act 3 - Foul Backwater Shortcut": self.has_inspectometer_battery,
-            "Act 3 - Filthy Corpse World Shortcut": self.has_inspectometer_battery,
-            "Act 3 - Gaudy Gem Land Shortcut": self.has_gems_and_battery, 
-            "Act 3 - Vessel Upgrade 1": self.has_inspectometer_battery,
-            "Act 3 - Vessel Upgrade 2": self.has_battery_and_quill_or_gems,
-            "Act 3 - Vessel Upgrade 3": self.has_gems_and_battery,
-            "Act 3 - Conduit Upgrade": self.has_gems_and_battery
+            "Act 3 - Filthy Corpse World Shortcut": self.has_filthy_corpse_world_requirements,
+            "Act 3 - Gaudy Gem Land Shortcut": self.has_gaudy_gem_land_requirements, 
+            "Act 3 - Vessel Upgrade 1": self.has_vessel_upgrade_requirements(1),
+            "Act 3 - Vessel Upgrade 2": self.has_vessel_upgrade_requirements(2),
+            "Act 3 - Vessel Upgrade 3": self.has_vessel_upgrade_requirements(3),
+            "Act 3 - Conduit Upgrade": self.has_resplendent_bastion_requirements,
+            "Act 3 - Wizard Tower Satellite Dish": self.has_gaudy_gem_land_requirements
         }
         self.region_rules = {
             "Act 1": self.has_act1_requirements,
@@ -388,28 +386,78 @@ class InscryptionRules:
     def has_inspectometer_battery(self, state: CollectionState) -> bool:
         return state.has("Inspectometer Battery", self.player)
 
+    def has_act3_missable_check_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.act3_overhaul:
+            return True
+        return state.has("Inspectometer Battery", self.player)
+
+    def has_act3_bridge_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.act3_overhaul:
+            return state.has("Act 3 Bridge Repair", self.player)
+        return state.has("Inspectometer Battery", self.player)
+
+    def has_filthy_corpse_world_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.act3_overhaul:
+            return True
+        return state.has("Inspectometer Battery", self.player)
+
+    def has_archivist_requirements(self, state: CollectionState) -> bool:
+        return self.has_filthy_corpse_world_requirements(state) and state.has("Quill", self.player)
+
+    def has_gaudy_gem_land_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.act3_overhaul:
+            return self.has_act3_bridge_requirements(state) and state.has("Gems Module", self.player)
+        return self.has_gems_and_battery(state)
+
+    def has_resplendent_bastion_requirements(self, state: CollectionState) -> bool:
+        if self.world.options.act3_overhaul:
+            return self.has_act3_bridge_requirements(state) and state.has("Respledent Bastion Gate", self.player)
+        return self.has_gems_and_battery(state)
+
+    def has_gem_land_access_and_quill(self, state: CollectionState) -> bool:
+        return state.has("Quill", self.player) and self.has_gaudy_gem_land_requirements(state)
+
     def has_gems_and_battery(self, state: CollectionState) -> bool:
-        return state.has("Gems Module", self.player) and self.has_inspectometer_battery(state)
+        return state.has("Gems Module", self.player) and self.has_act3_bridge_requirements(state)
+
+    def has_bridge_and_quill(self, state: CollectionState) -> bool:
+        return state.has("Quill", self.player) and self.has_act3_bridge_requirements(state)
 
     def has_pelts(self, count: int) -> Callable[[CollectionState], bool]:
-        return lambda state: state.has("Holo Pelt", self.player, count) and self.has_gems_and_battery(state)
+        return lambda state: state.has("Holo Pelt", self.player, count) and \
+            self.has_resplendent_bastion_requirements(state)
+
+    def has_vessel_upgrade_requirements(self, count: int) -> Callable[[CollectionState], bool]:
+        return lambda state: (int(self.has_resplendent_bastion_requirements(state)) + \
+            int(self.has_inspectometer_battery(state)) + int(self.has_archivist_requirements(state)) + \
+            int(self.has_gaudy_gem_land_requirements(state))) >= count
 
     def has_mycologists_boss_requirements(self, state: CollectionState) -> bool:
         return state.has("Mycologists Holo Key", self.player) and self.has_transcendence_requirements(state)
 
     def has_bone_lord_room_requirements(self, state: CollectionState) -> bool:
-        return state.has("Bone Lord Holo Key", self.player) and self.has_inspectometer_battery(state)
+        return state.has("Bone Lord Holo Key", self.player) and self.has_filthy_corpse_world_requirements(state)
 
     def has_battery_and_quill(self, state: CollectionState) -> bool:
         return state.has("Quill", self.player) and self.has_inspectometer_battery(state)
 
     def has_transcendence_requirements(self, state: CollectionState) -> bool:
-        return state.has("Quill", self.player) and self.has_gems_and_battery(state)
+        return self.has_resplendent_bastion_requirements(state) and self.has_inspectometer_battery(state) and \
+            self.has_archivist_requirements(state) and self.has_gaudy_gem_land_requirements(state)
 
     def has_goobert_painting_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_1:
-            return self.has_trapper_requirements(state) and self.has_gems_and_battery(state)
-        return self.has_gems_and_battery(state)
+            return self.has_trapper_requirements(state) and self.has_resplendent_bastion_requirements(state) and \
+                self.has_inspectometer_battery(state)
+        return self.has_resplendent_bastion_requirements(state) and self.has_inspectometer_battery(state)
+
+    def has_act3_shop_requirements(self, state: CollectionState) -> bool:
+        return int(self.has_resplendent_bastion_requirements(state)) + \
+            int(self.has_inspectometer_battery(state)) + int(self.has_filthy_corpse_world_requirements(state)) + \
+            int(self.has_gaudy_gem_land_requirements(state)) >= 3
+  
+    def has_ourobot_requirements(self, state: CollectionState) -> bool:
+        return self.has_gaudy_gem_land_requirements(state) and self.has_act3_shop_requirements(state)
 
     def has_act1_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_1 and self.world.options.act_unlocks == ActUnlocks.option_items:
