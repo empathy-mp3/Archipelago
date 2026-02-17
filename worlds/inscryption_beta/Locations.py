@@ -145,7 +145,7 @@ act3_locations = [
     "Act 3 - Vessel Upgrade 2", # act 1 + act 2 + 35
     "Act 3 - Vessel Upgrade 3", # act 1 + act 2 + 36
     "Act 3 - Conduit Upgrade", # act 1 + act 2 + 37
-    "Act 3 - Wizard Tower Satellite Dish" # act 1 + act 2 + 37
+    "Act 3 - Wizard Tower Satellite Dish" # act 1 + act 2 + 38
 ]
 
 regions_to_locations: Dict[str, List[str]] = {

@@ -107,8 +107,8 @@ class RandomizeSigils(Choice):
 
 class ExtraSigils(Toggle):
     """Allow extra sigils to show up in Act 1 and 3.
-    These include sigils from other acts, Kaycee's Mod, or just new ones from the same act.
-    Some very strong sigils will not show up."""
+    These include sigils from other acts, or just new ones from the same act.
+    Many of the most powerful sigils have been removed from the list."""
     display_name = "Extra Sigils"
 
 class RandomizeNodes(Toggle):
@@ -207,6 +207,29 @@ class SkipTutorial(DefaultOnToggle):
 class SkipEpilogue(Toggle):
     """Completes the goal as soon as the required acts are completed without the need of completing the epilogue."""
     display_name = "Skip Epilogue"
+
+
+class PortKayceesMod(Toggle):
+    """Port many things from Kaycee's Mod over to Act 1.
+    This includes all the cards, all the sigils, all the consumables, and a couple of the nerfs."""
+    display_name = "Port Kaycee's Mod"
+
+
+class Act1FinalBoss(Choice):
+    """Choose what boss you'll fight at the end of Act 1 runs.
+    The rest of the sequence leading up to the final boss (and what happens after) will remain unchanged, 
+    but the boss itself will be different.
+
+    - Leshy: You'll fight Leshy, as normal in Act 1
+
+    - Royal: You'll fight the Royal final boss, from Kaycee's Mod.
+
+    - Random Every Run: It'll choose randomly between the other two every run."""
+    display_name = "Act 1 Final Boss"
+    option_leshy = 0
+    option_royal = 1
+    option_random_every_run = 2
+    default = 0
 
 
 class Act2RandomizeBridge(Choice):
@@ -321,6 +344,8 @@ class InscryptionOptions(PerGameCommonOptions):
     randomize_deck: RandomizeDeck
     randomize_sigils: RandomizeSigils
     extra_sigils: ExtraSigils
+    port_kaycees_mod: PortKayceesMod
+    act1_final_boss: Act1FinalBoss
     painting_checks_balancing: PaintingChecksBalancing
     randomize_nodes: RandomizeNodes
     randomize_challenges: RandomizeChallenges
@@ -351,6 +376,8 @@ inscryption_option_groups = [
         RandomizeDeck,
         RandomizeSigils,
         ExtraSigils,
+        PortKayceesMod,
+        Act1FinalBoss,
     ]),
     OptionGroup("Traps", [
         TrapChance,

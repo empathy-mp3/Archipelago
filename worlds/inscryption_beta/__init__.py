@@ -322,6 +322,8 @@ class InscryptionWorld(World):
             "randomize_deck",
             "randomize_sigils",
             "extra_sigils",
+            "port_kaycees_mod",
+            "act1_final_boss",
             "randomize_nodes",
             "randomize_challenges",
             "randomize_hammer",
