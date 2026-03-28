@@ -239,8 +239,8 @@ class InscryptionWorld(World):
             self.multiworld.itempool.append(new_item)
 
     def create_regions(self) -> None:
-        regions_to_locations_copy = regions_to_locations.copy()
-        used_regions = inscryption_regions_all.copy()
+        regions_to_locations_copy = {key: value.copy() for key, value in regions_to_locations.items()}
+        used_regions = {key: value.copy() for key, value in inscryption_regions_all.items()}
 
         if not self.options.enable_act_1:
             del used_regions["Act 1"]
