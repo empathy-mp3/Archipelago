@@ -125,10 +125,11 @@ class RandomizeChallenges(Choice):
     Also, Grizzly Bosses Challenge has been split into 3 different Progressive Grizzlies,
     and there's additional Tipped Scales Challenges that each tick down your health.
 
-    This option will add checks for trading in each type of pelt to the trader, a check for 
-    finishing Act 1, and new consumables in each map area (except the last one) that grant checks.
-    There's also 3 free checks scattered around the cabin.
-    If Randomize Nodes is disabled, this will also add checks for each battle.
+    This option will add checks for trading in each type of pelt to the trader, 
+    a check for finishing Act 1, and 3 free checks scattered around the cabin.
+    If Randomize Nodes is enabled, this will add new consumables in each map 
+    area (except the last one) that grant checks.
+    If Randomize Nodes is disabled, this will add checks for each battle.
     
     - No Grizzlies: Randomize everything except Grizzly Bosses Challenge, which is disabled."""
     display_name = "Randomize Challenges"
