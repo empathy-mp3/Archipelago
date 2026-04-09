@@ -287,8 +287,7 @@ class TrapTypeWeights(OptionCounter):
     Deck Size Trap: Increases the Act 2 minimum deck size (which is normally 20) by 1
     Reinforcements Trap: Fills the back row with enemy cards.
     
-    Bleach Trap doesn't work in Act 2, and Deck Size Trap is exclusive to Act 2,
-    so those won't be generated if relevant acts are disabled."""
+    Deck Size Trap is exclusive to Act 2, so it'll only be generated if Act 2 is enabled."""
     schema = Schema({
         Optional("Bleach Trap"): lambda n: n >= 0,
         Optional("Trash Trap"): lambda n: n >= 0,
@@ -298,9 +297,9 @@ class TrapTypeWeights(OptionCounter):
     display_name = "Trap Type Weights"
     default = {
         "Bleach Trap": 2,
-        "Trash Trap": 1,
-        "Deck Size Trap": 1,
-        "Reinforcements Trap": 2
+        "Trash Trap": 0,
+        "Deck Size Trap": 0,
+        "Reinforcements Trap": 1
     }
 
 
