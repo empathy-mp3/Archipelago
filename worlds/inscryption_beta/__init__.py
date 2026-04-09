@@ -71,8 +71,6 @@ class InscryptionWorld(World):
                     if self.options.enable_act_2: possible_starts.append(StartingAct.option_act_2)
                     if self.options.enable_act_3: possible_starts.append(StartingAct.option_act_3)
                     self.options.starting_act = StartingAct(self.random.choice(possible_starts))
-        if not self.options.enable_act_1 and not self.options.enable_act_3:
-            self.options.trap_type_weights.value["Bleach Trap"] = 0
         if not self.options.enable_act_2:
             self.options.trap_type_weights.value["Deck Size Trap"] = 0
 
