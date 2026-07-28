@@ -408,7 +408,7 @@ class InscryptionRules:
 
     def has_resplendent_bastion_requirements(self, state: CollectionState) -> bool:
         if self.world.options.act3_overhaul:
-            return self.has_act3_bridge_requirements(state) and state.has("Respledent Bastion Gate", self.player)
+            return self.has_act3_bridge_requirements(state) and state.has("Resplendent Bastion Gate", self.player)
         return self.has_gems_and_battery(state)
 
     def has_gem_land_access_and_quill(self, state: CollectionState) -> bool:
