@@ -1,5 +1,11 @@
+import inspect
+import json
+
+from Options import PerGameCommonOptions
+
 from . import InscryptionTestBase
 from ..Items import trap_items
+from ..Options import InscryptionOptions
 
 
 TRAP_NAMES = {item["name"] for item in trap_items}
@@ -224,11 +230,32 @@ class TestSingleTrapType(OptionTestBase):
 class TestUniversalTrackerPassthrough(OptionTestBase):
     options = {"act_unlocks": 2, "starting_act": 0, "enable_act_1": 0}
 
-    def test_slot_data_carries_starting_act(self) -> None:
-        self.assertIn("starting_act", self.world.fill_slot_data())
+    # start_inventory_from_pool is Archipelago's own option; the tracker handles start inventory
+    # itself, so it is the one world-dataclass entry deliberately kept out of slot data.
+    core_options_not_in_slot_data = {"start_inventory_from_pool"}
 
-    def test_interpret_slot_data_requests_regeneration(self) -> None:
+    def test_slot_data_covers_every_world_option(self) -> None:
+        world_options = set(InscryptionOptions.type_hints) - set(PerGameCommonOptions.type_hints)
+        expected = world_options - self.core_options_not_in_slot_data
+        self.assertEqual(expected - set(self.world.fill_slot_data()), set())
+
+    def test_interpret_slot_data_is_static_and_requests_regeneration(self) -> None:
+        self.assertIsInstance(inspect.getattr_static(type(self.world), "interpret_slot_data"), staticmethod)
         self.assertIsNotNone(self.world.interpret_slot_data(self.world.fill_slot_data()))
+
+    def test_world_declares_it_can_generate_without_a_yaml(self) -> None:
+        self.assertTrue(getattr(self.world, "ut_can_gen_without_yaml", False))
+
+    def test_passthrough_restores_options_that_were_not_in_the_yaml(self) -> None:
+        slot_data = json.loads(json.dumps(self.world.fill_slot_data()))
+        slot_data.update({"act3_overhaul": 1, "randomize_nodes": 1,
+                          "trap_chance": 40, "painting_checks_balancing": 2})
+        self.world.multiworld.re_gen_passthrough = {self.world.game: slot_data}
+        self.world.generate_early()
+        self.assertEqual(self.world.options.act3_overhaul.value, 1)
+        self.assertEqual(self.world.options.randomize_nodes.value, 1)
+        self.assertEqual(self.world.options.trap_chance.value, 40)
+        self.assertEqual(self.world.options.painting_checks_balancing.value, 2)
 
     def test_passthrough_overrides_the_reroll(self) -> None:
         for act in (1, 2):

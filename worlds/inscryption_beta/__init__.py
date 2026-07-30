@@ -57,23 +57,30 @@ class InscryptionWorld(World):
     item_name_groups = item_groups
     required_epitaph_pieces_count = 9
     required_epitaph_pieces_name = "Epitaph Piece"
+    ut_can_gen_without_yaml = True
 
     def generate_early(self) -> None:
+        passthrough = getattr(self.multiworld, "re_gen_passthrough", None)
+        if passthrough and self.game in passthrough:
+            for option_name, option_value in passthrough[self.game].items():
+                option = getattr(self.options, option_name, None)
+                if option is None:
+                    continue
+                if isinstance(option_value, dict):
+                    option_value = dict(option_value)
+                setattr(self.options, option_name, option.from_any(option_value))
+
         if not self.options.enable_act_1 and not self.options.enable_act_2 and not self.options.enable_act_3:
             raise OptionError(f'{self.player_name} must enable at least one act.')
         if self.options.act_unlocks == ActUnlocks.option_items:
             if  (not self.options.enable_act_1 and self.options.starting_act == StartingAct.option_act_1) or \
                 (not self.options.enable_act_2 and self.options.starting_act == StartingAct.option_act_2) or \
                 (not self.options.enable_act_3 and self.options.starting_act == StartingAct.option_act_3):
-                    passthrough = getattr(self.multiworld, "re_gen_passthrough", None)
-                    if passthrough and self.game in passthrough:
-                        self.options.starting_act = StartingAct(passthrough[self.game]["starting_act"])
-                    else:
-                        possible_starts = []
-                        if self.options.enable_act_1: possible_starts.append(StartingAct.option_act_1)
-                        if self.options.enable_act_2: possible_starts.append(StartingAct.option_act_2)
-                        if self.options.enable_act_3: possible_starts.append(StartingAct.option_act_3)
-                        self.options.starting_act = StartingAct(self.random.choice(possible_starts))
+                    possible_starts = []
+                    if self.options.enable_act_1: possible_starts.append(StartingAct.option_act_1)
+                    if self.options.enable_act_2: possible_starts.append(StartingAct.option_act_2)
+                    if self.options.enable_act_3: possible_starts.append(StartingAct.option_act_3)
+                    self.options.starting_act = StartingAct(self.random.choice(possible_starts))
         if not self.options.enable_act_2:
             self.options.trap_type_weights.value["Deck Size Trap"] = 0
 
@@ -329,8 +336,12 @@ class InscryptionWorld(World):
             "skip_tutorial",
             "skip_epilogue",
             "epitaph_pieces_randomization",
-            "starting_act"
+            "starting_act",
+            "painting_checks_balancing",
+            "trap_chance",
+            "trap_type_weights"
         )
 
-    def interpret_slot_data(self, slot_data: Dict[str, Any]) -> Dict[str, Any]:
+    @staticmethod
+    def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
         return slot_data
