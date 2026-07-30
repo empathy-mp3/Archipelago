@@ -219,3 +219,25 @@ class TestSingleTrapType(OptionTestBase):
     def test_only_the_weighted_trap_is_generated(self) -> None:
         traps = {n for n in self.pool_names() if n in TRAP_NAMES}
         self.assertEqual(traps, {"Bleach Trap"})
+
+
+class TestUniversalTrackerPassthrough(OptionTestBase):
+    options = {"act_unlocks": 2, "starting_act": 0, "enable_act_1": 0}
+
+    def test_slot_data_carries_starting_act(self) -> None:
+        self.assertIn("starting_act", self.world.fill_slot_data())
+
+    def test_interpret_slot_data_requests_regeneration(self) -> None:
+        self.assertIsNotNone(self.world.interpret_slot_data(self.world.fill_slot_data()))
+
+    def test_passthrough_overrides_the_reroll(self) -> None:
+        for act in (1, 2):
+            self.world.options.starting_act.value = 0
+            self.world.multiworld.re_gen_passthrough = {self.world.game: {"starting_act": act}}
+            self.world.generate_early()
+            self.assertEqual(self.world.options.starting_act.value, act)
+
+    def test_reroll_still_happens_without_passthrough(self) -> None:
+        self.world.options.starting_act.value = 0
+        self.world.generate_early()
+        self.assertIn(self.world.options.starting_act.value, (1, 2))

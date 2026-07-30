@@ -331,3 +331,6 @@ class InscryptionWorld(World):
             "epitaph_pieces_randomization",
             "starting_act"
         )
+
+    def interpret_slot_data(self, slot_data: Dict[str, Any]) -> Dict[str, Any]:
+        return slot_data
