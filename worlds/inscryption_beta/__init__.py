@@ -10,7 +10,6 @@ from . import Rules
 from BaseClasses import Region, Item, Tutorial, ItemClassification
 from Options import OptionError
 from worlds.AutoWorld import World, WebWorld
-import random
 
 
 class InscrypWeb(WebWorld):
@@ -66,11 +65,18 @@ class InscryptionWorld(World):
             if  (not self.options.enable_act_1 and self.options.starting_act == StartingAct.option_act_1) or \
                 (not self.options.enable_act_2 and self.options.starting_act == StartingAct.option_act_2) or \
                 (not self.options.enable_act_3 and self.options.starting_act == StartingAct.option_act_3):
-                    possible_starts = []
-                    if self.options.enable_act_1: possible_starts.append(StartingAct.option_act_1)
-                    if self.options.enable_act_2: possible_starts.append(StartingAct.option_act_2)
-                    if self.options.enable_act_3: possible_starts.append(StartingAct.option_act_3)
-                    self.options.starting_act = StartingAct(self.random.choice(possible_starts))
+                    # Universal Tracker re-runs generation to simulate logic. Restore the act the
+                    # server actually picked, otherwise the re-roll below would diverge from it and
+                    # the tracker would expect the wrong starting item and item pool.
+                    passthrough = getattr(self.multiworld, "re_gen_passthrough", None)
+                    if passthrough and self.game in passthrough:
+                        self.options.starting_act = StartingAct(passthrough[self.game]["starting_act"])
+                    else:
+                        possible_starts = []
+                        if self.options.enable_act_1: possible_starts.append(StartingAct.option_act_1)
+                        if self.options.enable_act_2: possible_starts.append(StartingAct.option_act_2)
+                        if self.options.enable_act_3: possible_starts.append(StartingAct.option_act_3)
+                        self.options.starting_act = StartingAct(self.random.choice(possible_starts))
         if not self.options.enable_act_2:
             self.options.trap_type_weights.value["Deck Size Trap"] = 0
 
@@ -221,7 +227,7 @@ class InscryptionWorld(World):
         if apply_trap_items:
             trap_count = int(filler_count * trap_chance)
             filler_count = filler_count - trap_count
-            trap_list = random.choices (
+            trap_list = self.random.choices (
                 population = list(trap_weights.keys()),
                 weights = list(trap_weights.values()),
                 k = trap_count
@@ -331,5 +337,8 @@ class InscryptionWorld(World):
             "optional_death_card",
             "skip_tutorial",
             "skip_epilogue",
-            "epitaph_pieces_randomization"
+            "epitaph_pieces_randomization",
+            # generate_early may reassign this when the chosen act is disabled, so it has to be
+            # recorded for Universal Tracker to reproduce the same starting item and item pool.
+            "starting_act"
         )
