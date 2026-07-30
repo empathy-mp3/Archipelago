@@ -6,7 +6,6 @@ class InscryptionTestBase(WorldTestBase):
     required_items_all_acts = ["Film Roll", "Camera Replica", "Pile Of Meat", "Monocle",
                                "Inspectometer Battery", "Gems Module", "Quill"]
 
-    # The items that make each act beatable, so goal tests can add one act at a time.
     act_1_items = ["Film Roll"]
     act_2_items = ["Camera Replica", "Pile Of Meat", "Monocle"]
     act_3_items = ["Inspectometer Battery", "Gems Module", "Quill"]

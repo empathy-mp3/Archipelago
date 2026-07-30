@@ -1,9 +1,6 @@
 from . import InscryptionTestBase
 from ..Items import trap_items
 
-# Options this fork adds on top of the upstream Inscryption world. Every class here also inherits
-# Archipelago's generic world tests, so each option combination gets fill and reachability coverage
-# -- which is what catches the item pool and location count drifting apart.
 
 TRAP_NAMES = {item["name"] for item in trap_items}
 
@@ -23,12 +20,8 @@ class OptionTestBase(InscryptionTestBase):
         self.assertEqual(prefixes, set(expected_acts))
 
     def assert_pool_matches_locations(self) -> None:
-        # The pool is padded with filler to exactly fill the locations that were created, so any
-        # mismatch means create_items and create_regions disagree about which ones exist.
         self.assertEqual(len(self.pool_names()), len(self.location_names()))
 
-
-# --- enable_act_1 / enable_act_2 / enable_act_3 -------------------------------------------------
 
 class TestActOneOnly(OptionTestBase):
     options = {"enable_act_2": 0, "enable_act_3": 0}
@@ -62,13 +55,10 @@ class TestTwoActsEnabled(OptionTestBase):
         self.assert_pool_matches_locations()
 
 
-# --- act_unlocks / starting_act ------------------------------------------------------------------
-
 class TestActUnlocksOpen(OptionTestBase):
     options = {"act_unlocks": 1}
 
     def test_no_act_items_exist(self) -> None:
-        # Everything is open from the start, so the Act items should not be generated at all.
         self.assertEqual([n for n in self.pool_names() if n in ("Act 1", "Act 2", "Act 3")], [])
         self.assertEqual(self.precollected_names(), [])
 
@@ -96,7 +86,6 @@ class TestActUnlocksItemsStartingActTwo(OptionTestBase):
 
 
 class TestActUnlocksItemsStartingActDisabled(OptionTestBase):
-    # generate_early has to reassign starting_act here, since the chosen act is not enabled.
     options = {"act_unlocks": 2, "starting_act": 0, "enable_act_1": 0}
 
     def test_starting_act_falls_back_to_an_enabled_act(self) -> None:
@@ -105,8 +94,6 @@ class TestActUnlocksItemsStartingActDisabled(OptionTestBase):
         self.assertIn(precollected[0], ("Act 2", "Act 3"))
         self.assertNotIn("Act 1", self.pool_names())
 
-
-# --- randomize_hammer ----------------------------------------------------------------------------
 
 class TestHammerVanilla(OptionTestBase):
     options = {"randomize_hammer": 0}
@@ -128,8 +115,6 @@ class TestHammerRemoved(OptionTestBase):
     def test_hammer_is_not_an_item(self) -> None:
         self.assertNotIn("Hammer", self.pool_names())
 
-
-# --- options that add locations ------------------------------------------------------------------
 
 class TestRandomizeNodes(OptionTestBase):
     options = {"randomize_nodes": 1}
@@ -193,7 +178,6 @@ class TestExtraSigils(OptionTestBase):
 
 
 class TestAllRandomizationEnabled(OptionTestBase):
-    # The widest configuration, which should create every location the tables define.
     options = {
         "randomize_nodes": 1,
         "randomize_challenges": 2,
@@ -209,8 +193,6 @@ class TestAllRandomizationEnabled(OptionTestBase):
         self.assert_pool_matches_locations()
         self.assertEqual(len(self.location_names()), len(self.multiworld.worlds[self.player].all_locations))
 
-
-# --- trap_chance / trap_type_weights --------------------------------------------------------------
 
 class TestNoTraps(OptionTestBase):
     options = {"trap_chance": 0}

@@ -65,9 +65,6 @@ class InscryptionWorld(World):
             if  (not self.options.enable_act_1 and self.options.starting_act == StartingAct.option_act_1) or \
                 (not self.options.enable_act_2 and self.options.starting_act == StartingAct.option_act_2) or \
                 (not self.options.enable_act_3 and self.options.starting_act == StartingAct.option_act_3):
-                    # Universal Tracker re-runs generation to simulate logic. Restore the act the
-                    # server actually picked, otherwise the re-roll below would diverge from it and
-                    # the tracker would expect the wrong starting item and item pool.
                     passthrough = getattr(self.multiworld, "re_gen_passthrough", None)
                     if passthrough and self.game in passthrough:
                         self.options.starting_act = StartingAct(passthrough[self.game]["starting_act"])
@@ -134,8 +131,6 @@ class InscryptionWorld(World):
     def create_items(self) -> None:
         nb_items_added = 0
         useful_items = self.all_items.copy()
-        # create_regions runs first and drops locations the chosen options exclude, so count what
-        # it actually created rather than re-deriving it from the full table and drifting apart.
         included_locations = len(self.multiworld.get_unfilled_locations(self.player))
         filler_trap_items = filler_items + trap_items
 
@@ -334,7 +329,5 @@ class InscryptionWorld(World):
             "skip_tutorial",
             "skip_epilogue",
             "epitaph_pieces_randomization",
-            # generate_early may reassign this when the chosen act is disabled, so it has to be
-            # recorded for Universal Tracker to reproduce the same starting item and item pool.
             "starting_act"
         )

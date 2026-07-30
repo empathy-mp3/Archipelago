@@ -1,8 +1,6 @@
 from . import InscryptionTestBase
 
 
-# goal selects how many acts must be beaten: required_acts = goal + 1, capped at the number of
-# enabled acts. These tests walk that staircase, collecting one act's requirements at a time.
 class GoalTestOneAct(InscryptionTestBase):
     options = {
         "goal": 0,
@@ -43,7 +41,6 @@ class GoalTestAllActs(InscryptionTestBase):
         self.collect_act_2()
         self.collect_act_3()
         self.assertBeatable(True)
-        # Each act gates the goal on its own, so dropping any single act's key item breaks it.
         for item_name in ("Film Roll", "Monocle", "Inspectometer Battery"):
             item = self.get_item_by_name(item_name)
             self.remove(item)
