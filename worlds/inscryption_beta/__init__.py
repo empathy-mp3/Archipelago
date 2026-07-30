@@ -134,7 +134,9 @@ class InscryptionWorld(World):
     def create_items(self) -> None:
         nb_items_added = 0
         useful_items = self.all_items.copy()
-        included_locations = len(self.all_locations)
+        # create_regions runs first and drops locations the chosen options exclude, so count what
+        # it actually created rather than re-deriving it from the full table and drifting apart.
+        included_locations = len(self.multiworld.get_unfilled_locations(self.player))
         filler_trap_items = filler_items + trap_items
 
         useful_items = [item for item in useful_items
@@ -160,13 +162,10 @@ class InscryptionWorld(World):
             if self.options.randomize_vessel_upgrades == RandomizeVesselUpgrades.option_vanilla:
                 useful_items.pop(len(act1_items) + len(act2_items) + 16)
                 useful_items.pop(len(act1_items) + len(act2_items) + 15)
-                included_locations -= 4
             if self.options.randomize_shortcuts != RandomizeShortcuts.option_randomize:
                 useful_items.pop(len(act1_items) + len(act2_items) + 14)
                 useful_items.pop(len(act1_items) + len(act2_items) + 13)
                 useful_items.pop(len(act1_items) + len(act2_items) + 12)
-                if self.options.randomize_shortcuts == RandomizeShortcuts.option_vanilla:
-                    included_locations -= 3
         if self.options.enable_act_2:
             if self.options.act2_randomize_bridge == Act2RandomizeBridge.option_disable:
                 useful_items.pop(len(act1_items) + 13)
@@ -201,15 +200,12 @@ class InscryptionWorld(World):
         if not self.options.enable_act_1:
             useful_items = [item for item in useful_items
                             if not any(act1_item["name"] == item["name"] for act1_item in act1_items)]
-            included_locations -= len(act1_locations)
         if not self.options.enable_act_2:
             useful_items = [item for item in useful_items
                             if not any(act2_item["name"] == item["name"] for act2_item in act2_items)]
-            included_locations -= len(act2_locations)
         if not self.options.enable_act_3:
             useful_items = [item for item in useful_items
                             if not any(act3_item["name"] == item["name"] for act3_item in act3_items)]
-            included_locations -= len(act3_locations)
 
         for item in useful_items:
             for _ in range(item["count"]):

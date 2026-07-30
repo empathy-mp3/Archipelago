@@ -73,9 +73,11 @@ class AccessTestGeneral(InscryptionTestBase):
         )
 
 
+# Act ordering is controlled by act_unlocks, not goal -- goal only decides how many acts must be
+# beaten. These two classes cover sequential vs open access.
 class AccessTestOrdered(InscryptionTestBase):
     options = {
-        "goal": 0,
+        "act_unlocks": 0,  # sequential
     }
 
     def test_film_roll(self) -> None:
@@ -174,7 +176,7 @@ class AccessTestOrdered(InscryptionTestBase):
 
 class AccessTestUnordered(InscryptionTestBase):
     options = {
-        "goal": 1,
+        "act_unlocks": 1,  # open
     }
 
     def test_epitaphs_and_forest_items(self) -> None:
