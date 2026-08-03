@@ -515,6 +515,24 @@ class InscryptionRules:
             return act1 and act2 and act3
         return True
 
+    # With release on act completion the mod hands over an act's remaining checks the moment the
+    # act is beaten, so every check is reachable either its normal way or as soon as its act can
+    # be finished. Applied last, so it also covers the per-option overrides set below.
+    def apply_act_release_rules(self) -> None:
+        beat_rules = {
+            "Act 1": self.beat_act1_requirements,
+            "Act 2": self.beat_act2_requirements,
+            "Act 3": self.beat_act3_requirements
+        }
+
+        for loc in self.world.multiworld.get_locations(self.player):
+            beat_rule = beat_rules.get(loc.name.split(" - ")[0])
+            if beat_rule is None:
+                continue
+
+            normal_rule = loc.access_rule
+            loc.access_rule = lambda state, n=normal_rule, b=beat_rule: n(state) or b(state)
+
     def set_all_rules(self) -> None:
         multiworld = self.world.multiworld
         multiworld.completion_condition[self.player] = self.has_epilogue_requirements
@@ -542,3 +560,6 @@ class InscryptionRules:
             if self.world.options.randomize_nodes or \
                 self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
                 self.world.get_location("Act 3 - Goobert's Painting").progress_type = LocationProgressType.EXCLUDED
+
+        if self.world.options.release_on_act_completion:
+            self.apply_act_release_rules()

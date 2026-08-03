@@ -75,6 +75,31 @@ class TestTwoActsEnabled(OptionTestBase):
         self.assert_filler_only_for_acts(1, 2)
 
 
+class ReleaseTestBase(OptionTestBase):
+    # The release rule wraps each location's own rule in a lambda carrying both as defaults, which
+    # is what distinguishes it from Archipelago's own default "always reachable" lambda.
+    def release_wrapped_locations(self):
+        return [loc for loc in self.multiworld.get_locations(self.player)
+                if len(getattr(loc.access_rule, "__defaults__", None) or ()) == 2]
+
+
+class TestReleaseOnActCompletion(ReleaseTestBase):
+    options = {"release_on_act_completion": 1}
+
+    def test_option_reaches_the_mod(self) -> None:
+        self.assertEqual(self.world.fill_slot_data()["release_on_act_completion"], 1)
+
+    def test_every_act_location_gains_the_release_rule(self) -> None:
+        self.assertEqual(len(self.release_wrapped_locations()), len(self.location_names()))
+
+
+class TestReleaseOnActCompletionDisabled(ReleaseTestBase):
+    options = {"release_on_act_completion": 0}
+
+    def test_locations_keep_their_own_rules(self) -> None:
+        self.assertEqual(self.release_wrapped_locations(), [])
+
+
 class TestActUnlocksOpen(OptionTestBase):
     options = {"act_unlocks": 1}
 

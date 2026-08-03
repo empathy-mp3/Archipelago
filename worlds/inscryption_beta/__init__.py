@@ -323,7 +323,7 @@ class InscryptionWorld(World):
         Rules.InscryptionRules(self).set_all_rules()
 
     def fill_slot_data(self) -> Dict[str, Any]:
-        return self.options.as_dict(
+        data = self.options.as_dict(
             "death_link",
             "act1_death_link_behaviour",
             "enable_act_1",
@@ -343,6 +343,7 @@ class InscryptionWorld(World):
             "randomize_shortcuts",
             "randomize_vessel_upgrades",
             "optional_death_card",
+            "release_on_act_completion",
             "skip_tutorial",
             "skip_epilogue",
             "epitaph_pieces_randomization",
@@ -351,6 +352,15 @@ class InscryptionWorld(World):
             "trap_chance",
             "trap_type_weights"
         )
+
+        # Location ids are assigned by position across the three acts. The range each act owns
+        # is worked out here, where that ordering is defined, rather than rebuilt in the mod.
+        counts = [len(act1_locations), len(act2_locations), len(act3_locations)]
+        for act, count in enumerate(counts, start=1):
+            data[f"act{act}_location_start"] = sum(counts[:act - 1])
+            data[f"act{act}_location_count"] = count
+
+        return data
 
     @staticmethod
     def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
