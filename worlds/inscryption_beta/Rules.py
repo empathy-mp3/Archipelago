@@ -425,8 +425,11 @@ class InscryptionRules:
             int(self.has_inspectometer_battery(state)) + int(self.has_archivist_requirements(state)) + \
             int(self.has_gaudy_gem_land_requirements(state))) >= count
 
+    # Available as soon as the hut can be opened and eastern Botopia reached, not at the end of the
+    # act. Mirrors the Bone Lord room, the other key-gated room on that side.
     def has_mycologists_boss_requirements(self, state: CollectionState) -> bool:
-        return state.has("Mycologists Holo Key", self.player) and self.has_transcendence_requirements(state)
+        return state.has("Mycologists Holo Key", self.player) and \
+            self.has_filthy_corpse_world_requirements(state)
 
     def has_bone_lord_room_requirements(self, state: CollectionState) -> bool:
         return state.has("Bone Lord Holo Key", self.player) and self.has_filthy_corpse_world_requirements(state)
