@@ -66,9 +66,7 @@ class AccessTestGeneral(InscryptionTestBase):
 
     def test_quill(self) -> None:
         self.assertAccessDependency(
-            ["Act 3 - Boss Archivist", "Act 3 - Luke's File Entry 1", "Act 3 - Luke's File Entry 2",
-             "Act 3 - Luke's File Entry 3", "Act 3 - Luke's File Entry 4", "Act 3 - The Great Transcendence",
-             "Act 3 - Boss Mycologists"],
+            ["Act 3 - Boss Archivist", "Act 3 - The Great Transcendence", "Act 3 - Boss Mycologists"],
             [["Quill"]]
         )
 

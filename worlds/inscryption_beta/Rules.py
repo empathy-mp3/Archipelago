@@ -121,10 +121,12 @@ class InscryptionRules:
             "Act 3 - The Great Transcendence": self.has_transcendence_requirements,
             "Act 3 - Boss Mycologists": self.has_mycologists_boss_requirements,
             "Act 3 - Bone Lord Room": self.has_bone_lord_room_requirements,
-            "Act 3 - Luke's File Entry 1": self.has_battery_and_quill,
-            "Act 3 - Luke's File Entry 2": self.has_bridge_and_quill,
-            "Act 3 - Luke's File Entry 3": self.has_bridge_and_quill,
-            "Act 3 - Luke's File Entry 4": self.has_gem_land_access_and_quill,
+            # The Quill gates one door, in the Undead temple's librarian room, and nothing in
+            # HoloMapLukeFile reads it. Confirmed in game: all reachable with the door shut.
+            "Act 3 - Luke's File Entry 1": self.has_inspectometer_battery,
+            "Act 3 - Luke's File Entry 2": self.has_act3_bridge_requirements,
+            "Act 3 - Luke's File Entry 3": self.has_act3_bridge_requirements,
+            "Act 3 - Luke's File Entry 4": self.has_gaudy_gem_land_requirements,
             "Act 3 - Well": self.has_filthy_corpse_world_requirements,
             "Act 3 - Gems Drone": self.has_act3_bridge_requirements,
             "Act 3 - Clock": self.has_ourobot_requirements,  # Can be brute-forced, but the solution needs those items.
@@ -411,14 +413,8 @@ class InscryptionRules:
             return self.has_act3_bridge_requirements(state) and state.has("Resplendent Bastion Gate", self.player)
         return self.has_gems_and_battery(state)
 
-    def has_gem_land_access_and_quill(self, state: CollectionState) -> bool:
-        return state.has("Quill", self.player) and self.has_gaudy_gem_land_requirements(state)
-
     def has_gems_and_battery(self, state: CollectionState) -> bool:
         return state.has("Gems Module", self.player) and self.has_act3_bridge_requirements(state)
-
-    def has_bridge_and_quill(self, state: CollectionState) -> bool:
-        return state.has("Quill", self.player) and self.has_act3_bridge_requirements(state)
 
     def has_pelts(self, count: int) -> Callable[[CollectionState], bool]:
         return lambda state: state.has("Holo Pelt", self.player, count) and \
@@ -434,9 +430,6 @@ class InscryptionRules:
 
     def has_bone_lord_room_requirements(self, state: CollectionState) -> bool:
         return state.has("Bone Lord Holo Key", self.player) and self.has_filthy_corpse_world_requirements(state)
-
-    def has_battery_and_quill(self, state: CollectionState) -> bool:
-        return state.has("Quill", self.player) and self.has_inspectometer_battery(state)
 
     def has_transcendence_requirements(self, state: CollectionState) -> bool:
         return self.has_resplendent_bastion_requirements(state) and self.has_inspectometer_battery(state) and \
