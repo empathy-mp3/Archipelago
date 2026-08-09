@@ -1,4 +1,5 @@
 from . import InscryptionTestBase
+from ..Rules import InscryptionRules
 
 
 class AccessTestGeneral(InscryptionTestBase):
@@ -208,6 +209,88 @@ class AccessTestUnordered(InscryptionTestBase):
              "Act 2 - Tentacle", "Act 2 - Ancient Obol", "Act 2 - Mycologists Holo Key"],
             [["Monocle"]]
         )
+
+class AccessTestGrizzliesWithRandomizedNodes(InscryptionTestBase):
+    options = {
+        "randomize_nodes": 1,
+        "randomize_challenges": 2,
+    }
+
+    bypass_items = ["Progressive Grizzlies", "Backpack Node", "Dagger", "Angler Hook"]
+
+    def test_prospector_takes_dagger_and_hook_or_backpack(self) -> None:
+        self.collect_all_but(self.bypass_items)
+        self.assertFalse(self.can_reach_location("Act 1 - Boss Prospector"))
+        self.collect_by_name(["Dagger", "Angler Hook"])
+        self.assertTrue(self.can_reach_location("Act 1 - Boss Prospector"))
+
+    def test_angler_takes_the_backpack_node(self) -> None:
+        self.collect_all_but(self.bypass_items)
+        self.collect_by_name(["Dagger", "Angler Hook"])
+        self.assertFalse(self.can_reach_location("Act 1 - Boss Angler"))
+        self.collect_by_name("Backpack Node")
+        self.assertTrue(self.can_reach_location("Act 1 - Boss Angler"))
+
+
+class AccessTestTotemChallengeOnBosses(InscryptionTestBase):
+    options = {
+        "randomize_nodes": 1,
+        "randomize_challenges": 2,
+    }
+
+    # 27 points, one short of the Angler's grizzly-inflated 28, with the backpack node the
+    # grizzly bypass wants so the points are what decides the fight.
+    base_items = ["Tipped Scales Challenge", "Backpack Node", "Progressive Candle",
+                  "Progressive Squirrel", "Angler Hook", "Oil Painting's Clover Plant"]
+
+    def test_totem_challenge_cannot_pay_for_a_boss(self) -> None:
+        rules = InscryptionRules(self.world)
+        state = self.multiworld.state
+        self.collect_by_name(self.base_items)
+        self.assertEqual(rules.act1_battle_points(state, is_boss=True, area2=True), 27)
+        self.assertFalse(rules.has_angler_requirements(state))
+
+        # All Totem Battles is worth 3 points, but only helps regular battles, so the boss
+        # threshold rises by 3 as well and the fight must stay out of logic.
+        self.collect_by_name("All Totem Battles Challenge")
+        self.assertEqual(rules.act1_battle_points(state, is_boss=True, area2=True), 30)
+        self.assertFalse(rules.has_angler_requirements(state))
+
+        # An item that does help the boss tips the same fight over.
+        self.collect_by_name("Greater Smoke")
+        self.assertTrue(rules.has_angler_requirements(state))
+
+
+class AccessTestWetlandsAreaTwoNodes(InscryptionTestBase):
+    options = {
+        "randomize_nodes": 1,
+        "randomize_challenges": 0,
+    }
+
+    def test_area_two_nodes_count_for_wetlands_battles(self) -> None:
+        rules = InscryptionRules(self.world)
+        state = self.multiworld.state
+        # 4 points clears the Prospector but leaves the wetlands a point short of its 5.
+        self.collect_by_name(["Woodcarver Node", "Backpack Node"])
+        self.assertTrue(rules.has_prospector_requirements(state))
+        self.assertFalse(rules.has_wetlands_requirements(state))
+
+        # The wetlands is where this node starts spawning, so it counts towards those battles.
+        self.collect_by_name("Mycologists Node")
+        self.assertTrue(rules.has_wetlands_requirements(state))
+
+
+class AccessTestGrizzliesWithFixedNodes(InscryptionTestBase):
+    options = {
+        "randomize_nodes": 0,
+        "randomize_challenges": 2,
+    }
+
+    def test_bosses_need_no_bypass(self) -> None:
+        self.collect_all_but(["Progressive Grizzlies", "Dagger", "Angler Hook"])
+        self.assertTrue(self.can_reach_location("Act 1 - Boss Angler"))
+        self.assertTrue(self.can_reach_location("Act 1 - Boss Trapper"))
+
 
 class AccessTestBalancedPaintings(InscryptionTestBase):
     options = {

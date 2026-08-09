@@ -1,11 +1,19 @@
-from typing import Dict, Callable, TYPE_CHECKING
+from typing import Dict, Callable, Optional, TYPE_CHECKING
 from BaseClasses import CollectionState, LocationProgressType
-from .Options import ActUnlocks, Goal, PaintingChecksBalancing, RandomizeChallenges, Act2RandomizeBridge
+from .Options import ActUnlocks, PaintingChecksBalancing, RandomizeChallenges, Act2RandomizeBridge
 
 if TYPE_CHECKING:
     from . import InscryptionWorld
 else:
     InscryptionWorld = object
+
+# Each Act 1 boss keeps its grizzly phase until this many Progressive Grizzlies are collected.
+PROSPECTOR, ANGLER, TRAPPER = 1, 2, 3
+
+# How far a boss's points threshold rises while it keeps its grizzly phase, and once the
+# All Totem Battles challenge has been turned off.
+GRIZZLY_PENALTY = 10
+TOTEM_PENALTY = 3
 
 
 # Based on The Messenger's implementation
@@ -146,6 +154,43 @@ class InscryptionRules:
             "Epilogue": self.has_epilogue_requirements
         }
 
+    @property
+    def nodes_randomized(self) -> bool:
+        return bool(self.world.options.randomize_nodes)
+
+    @property
+    def challenges_randomized(self) -> bool:
+        return self.world.options.randomize_challenges != RandomizeChallenges.option_disable
+
+    # Grizzlies are only in the pool on the full "randomize" setting, not on "no grizzlies".
+    @property
+    def grizzlies_randomized(self) -> bool:
+        return self.world.options.randomize_challenges == RandomizeChallenges.option_randomize
+
+    @property
+    def act1_randomized(self) -> bool:
+        return self.nodes_randomized or self.challenges_randomized
+
+    @property
+    def act2_bridge_randomized(self) -> bool:
+        return self.world.options.act2_randomize_bridge == Act2RandomizeBridge.option_enable
+
+    @property
+    def act2_starts_on_left_side(self) -> bool:
+        return self.world.options.act2_randomize_bridge == Act2RandomizeBridge.option_left_side_start
+
+    @property
+    def act3_overhauled(self) -> bool:
+        return bool(self.world.options.act3_overhaul)
+
+    @property
+    def acts_unlocked_by_items(self) -> bool:
+        return self.world.options.act_unlocks == ActUnlocks.option_items
+
+    @property
+    def acts_unlocked_sequentially(self) -> bool:
+        return self.world.options.act_unlocks == ActUnlocks.option_sequential
+
     act1_item_values: Dict[str, int] = {
         "Angler Hook": 1,
         "Oil Painting's Clover Plant": 1,
@@ -176,139 +221,137 @@ class InscryptionRules:
         "Bone Altar Node": 1
     }
 
-    def act1_battle_requirements(self, state: CollectionState, amount: int, isBoss: bool, area2: bool) -> bool:
-        enough = 0
+    # Act 1 battles are gated on a points budget: every item that makes a run easier is worth
+    # points, and each battle needs a threshold set by which Act 1 options are on.
+    def act1_battle_points(self, state: CollectionState, is_boss: bool, area2: bool) -> int:
+        points = 0
         for item, value in self.act1_item_values.items():
-            if state.has(item, self.player): enough += value
+            if state.has(item, self.player): points += value
         for item, values in self.act1_progressive_values.items():
-            count = 1
-            for value in values:
-                if state.has(item, self.player, count): enough += value
-                count += 1
-        if isBoss:
+            for copy, value in enumerate(values, start=1):
+                if state.has(item, self.player, copy): points += value
+        if is_boss:
             for item, value in self.act1_boss_item_values.items():
-                if state.has(item, self.player): enough += value
+                if state.has(item, self.player): points += value
         if area2:
-            if state.has_all(["Sacrifice Stones Node", "Goobert Node"], self.player): enough += 1
+            # The base game only spawns these nodes from the wetlands on, so they can only have
+            # helped a battle in the wetlands or later.
+            if state.has_all(["Sacrifice Stones Node", "Goobert Node"], self.player): points += 1
             for item, value in self.act1_area2_values.items():
-                if state.has(item, self.player): enough += value
-        if state.has_all(["Squirrel Totem Head", "Woodcarver Node"], self.player): enough += 3
-        if state.has_all(["Smaller Backpack Challenge", "Backpack Node"], self.player): enough += 1
-        return enough >= amount
-    
-    def bypass_grizzly_requirements(self, state: CollectionState, boss_number: int) -> bool:
-        if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
-            not state.has("Progressive Grizzlies", self.player, boss_number) and \
-            not self.world.options.randomize_nodes:
-            required_count = boss_number - state.count("Progressive Grizzlies", self.player)
-            if required_count == 1:
-                return state.has_all(["Dagger", "Angler Hook"], self.player) or state.has("Backpack Node", self.player)
-            else:
-                return state.has("Backpack Node", self.player)
-        return True
+                if state.has(item, self.player): points += value
+        if state.has_all(["Squirrel Totem Head", "Woodcarver Node"], self.player): points += 3
+        if state.has_all(["Smaller Backpack Challenge", "Backpack Node"], self.player): points += 1
+        return points
+
+    def act1_battle_requirements(self, state: CollectionState, amount: int, is_boss: bool, area2: bool) -> bool:
+        return self.act1_battle_points(state, is_boss, area2) >= amount
+
+    # Thresholds are tuned per option combination. None means neither option is on, so Act 1
+    # runs at vanilla difficulty and its battles are free.
+    def act1_points_needed(self, both: int, challenges_only: int, nodes_only: int) -> Optional[int]:
+        if self.nodes_randomized and self.challenges_randomized:
+            return both
+        if self.challenges_randomized:
+            return challenges_only
+        if self.nodes_randomized:
+            return nodes_only
+        return None
+
+    # All Totem Battles only changes regular battles, so on a boss the threshold rises by
+    # exactly the points the item is worth, cancelling it back out.
+    def act1_totem_penalty(self, state: CollectionState) -> int:
+        return TOTEM_PENALTY if state.has("All Totem Battles Challenge", self.player) else 0
+
+    # How much extra help a boss needs while it still has its grizzly phase.
+    def act1_grizzly_penalty(self, state: CollectionState, boss: int) -> int:
+        if self.grizzlies_randomized and not state.has("Progressive Grizzlies", self.player, boss):
+            return GRIZZLY_PENALTY
+        return 0
+
+    # A concrete answer to a boss that still has its grizzly phase. Only bites when nodes are
+    # randomized: with them off the backpack node is always there and its consumables suffice.
+    def bypass_grizzly_requirements(self, state: CollectionState, boss: int) -> bool:
+        if not self.grizzlies_randomized or not self.nodes_randomized:
+            return True
+        grizzlies_short = boss - state.count("Progressive Grizzlies", self.player)
+        if grizzlies_short <= 0:
+            return True
+        # One short is close enough to the tuned fight that the dagger's death card plus the
+        # hook can carry it. Any further short, only the backpack's consumables will do.
+        if grizzlies_short == 1:
+            return state.has("Backpack Node", self.player) or \
+                state.has_all(["Dagger", "Angler Hook"], self.player)
+        return state.has("Backpack Node", self.player)
 
     def has_later_woodlands_requirements(self, state: CollectionState) -> bool:
-        extra_points = 0
-        extra_points += state.count("Progressive Candle", self.player)*3
-        extra_points += state.count("Backpack Node", self.player)*2
-        if self.world.options.randomize_nodes and \
-            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 3 + extra_points, True, False)
-        return True
+        if not (self.nodes_randomized and self.challenges_randomized):
+            return True
+        # Candles and backpacks do nothing for these early fights, so the threshold rises by
+        # exactly the points they contribute, cancelling them back out.
+        cancelled = state.count("Progressive Candle", self.player) * 3 + \
+            state.count("Backpack Node", self.player) * 2
+        return self.act1_battle_requirements(state, 3 + cancelled, is_boss=True, area2=False)
 
     def has_prospector_requirements(self, state: CollectionState) -> bool:
-        extra_points = 0
-        if state.has("All Totem Battles Challenge", self.player): extra_points += 3
-        if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
-            not state.has("Progressive Grizzlies", self.player):
-                extra_points = 10
-        if self.world.options.randomize_nodes and \
-            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 6 + extra_points, True, False) and \
-                self.has_later_woodlands_requirements(state) and self.bypass_grizzly_requirements(state, 1)
-        elif self.world.options.randomize_nodes or \
-            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 4 + extra_points, True, False) and \
-                self.has_later_woodlands_requirements(state)
-        return True
+        needed = self.act1_points_needed(both=6, challenges_only=4, nodes_only=4)
+        if needed is None:
+            return True
+        needed += self.act1_totem_penalty(state) + self.act1_grizzly_penalty(state, PROSPECTOR)
+        return self.act1_battle_requirements(state, needed, is_boss=True, area2=False) and \
+            self.has_later_woodlands_requirements(state) and \
+            self.bypass_grizzly_requirements(state, PROSPECTOR)
 
     def has_wetlands_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.randomize_nodes and \
-            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 13, True, True) and self.has_prospector_requirements(state)
-        elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 8, True, True) and self.has_prospector_requirements(state)
-        elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 5, True, False) and self.has_prospector_requirements(state)
-        return True
-    
+        needed = self.act1_points_needed(both=13, challenges_only=8, nodes_only=5)
+        if needed is None:
+            return True
+        return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
+            self.has_prospector_requirements(state)
+
     def has_angler_requirements(self, state: CollectionState) -> bool:
-        extra_points = 0
-        if state.has("All Totem Battles Challenge", self.player): extra_points += 3
-        if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
-            not state.has("Progressive Grizzlies", self.player, 2):
-                extra_points = 10
-        if self.world.options.randomize_nodes and \
-            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 18 + extra_points, True, True) and \
-                self.bypass_grizzly_requirements(state, 2)
-        elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 13 + extra_points, True, True) and \
-                self.bypass_grizzly_requirements(state, 2)
-        elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 8, True, True)
-        return True
+        needed = self.act1_points_needed(both=18, challenges_only=13, nodes_only=8)
+        if needed is None:
+            return True
+        needed += self.act1_totem_penalty(state) + self.act1_grizzly_penalty(state, ANGLER)
+        return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
+            self.bypass_grizzly_requirements(state, ANGLER)
 
     def has_snow_line_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.randomize_nodes and \
-            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 23, True, True) and self.has_angler_requirements(state)
-        elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 17, True, True) and self.has_angler_requirements(state)
-        elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 8, True, True) and self.has_angler_requirements(state)
-        return True
+        needed = self.act1_points_needed(both=23, challenges_only=17, nodes_only=8)
+        if needed is None:
+            return True
+        return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
+            self.has_angler_requirements(state)
 
     def has_trapper_requirements(self, state: CollectionState) -> bool:
-        extra_points = 0
-        if state.has("All Totem Battles Challenge", self.player): extra_points += 3
-        if self.world.options.randomize_challenges == RandomizeChallenges.option_randomize and \
-            not state.has("Progressive Grizzlies", self.player, 3):
-                extra_points += 10
-        if self.world.options.randomize_nodes and \
-            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 27 + extra_points, True, True) and \
-                self.bypass_grizzly_requirements(state, 3)
-        elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 22 + extra_points, True, True) and \
-                self.bypass_grizzly_requirements(state, 3)
-        elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 12, True, True)
-        return True
+        needed = self.act1_points_needed(both=27, challenges_only=22, nodes_only=12)
+        if needed is None:
+            return True
+        needed += self.act1_totem_penalty(state) + self.act1_grizzly_penalty(state, TRAPPER)
+        return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
+            self.bypass_grizzly_requirements(state, TRAPPER)
 
     def has_leshy_requirements(self, state: CollectionState) -> bool:
-        nope = 0
-        if state.has("All Totem Battles Challenge", self.player): nope += 3
-        if self.world.options.randomize_nodes and \
-            self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 33 + nope, True, True) and self.has_trapper_requirements(state)
-        elif self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
-            return self.act1_battle_requirements(state, 27 + nope, True, True) and self.has_trapper_requirements(state)
-        elif self.world.options.randomize_nodes:
-            return self.act1_battle_requirements(state, 12 + nope, True, True) and self.has_trapper_requirements(state)
-        return True
+        needed = self.act1_points_needed(both=33, challenges_only=27, nodes_only=12)
+        if needed is None:
+            return True
+        needed += self.act1_totem_penalty(state)
+        return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
+            self.has_trapper_requirements(state)
+
+    # Consumable checks are the items a run picks up off the map, which only exist while the
+    # backpack node does.
+    def has_backpack_consumables(self, state: CollectionState) -> bool:
+        return not self.nodes_randomized or state.has("Backpack Node", self.player)
 
     def has_woodlands_consumable_requirements(self, state: CollectionState) -> bool:
-        return (not self.world.options.randomize_nodes or state.has("Backpack Node", self.player)) and \
-            self.has_later_woodlands_requirements(state)
+        return self.has_backpack_consumables(state) and self.has_later_woodlands_requirements(state)
 
     def has_wetlands_consumable_requirements(self, state: CollectionState) -> bool:
-        return (not self.world.options.randomize_nodes or state.has("Backpack Node", self.player)) and \
-            self.has_wetlands_requirements(state)
+        return self.has_backpack_consumables(state) and self.has_wetlands_requirements(state)
 
     def has_snow_line_consumable_requirements(self, state: CollectionState) -> bool:
-        return (not self.world.options.randomize_nodes or state.has("Backpack Node", self.player)) and \
-            self.has_snow_line_requirements(state)
+        return self.has_backpack_consumables(state) and self.has_snow_line_requirements(state)
 
     def has_wolf_pelt_requirements(self, state: CollectionState) -> bool:
         return self.has_snow_line_requirements(state) or \
@@ -330,7 +373,7 @@ class InscryptionRules:
         return state.has("Magnificus Eye", self.player)
 
     def has_useful_act1_items(self, state: CollectionState) -> bool:
-        if self.world.options.randomize_nodes:
+        if self.nodes_randomized:
             return state.has_all(("Oil Painting's Clover Plant", "Squirrel Totem Head", "Woodcarver Node"), self.player)
         return state.has_all(("Oil Painting's Clover Plant", "Squirrel Totem Head"), self.player)
     
@@ -356,15 +399,16 @@ class InscryptionRules:
         return self.has_camera_and_meat(state) and self.has_all_epitaph_pieces(state)
 
     def has_act2_right_side_requirements(self, state: CollectionState) -> bool:
-        if (self.world.options.act2_randomize_bridge == Act2RandomizeBridge.option_left_side_start):
+        if self.act2_starts_on_left_side:
             return state.has("Act 2 Bridge Repair", self.player)
         return True
 
     def has_act2_bridge_requirements(self, state: CollectionState) -> bool:
-        if (self.world.options.act2_randomize_bridge == Act2RandomizeBridge.option_enable):
+        if self.act2_bridge_randomized:
             return state.has("Act 2 Bridge Repair", self.player)
-        elif (self.world.options.act2_randomize_bridge == Act2RandomizeBridge.option_left_side_start):
+        if self.act2_starts_on_left_side:
             return True
+        # Vanilla: the bridge opens once either the forest or the crypt route is finished.
         return self.has_camera_and_meat(state) or self.has_all_epitaph_pieces(state)
 
     def has_forest_requirements(self, state: CollectionState) -> bool:
@@ -385,31 +429,33 @@ class InscryptionRules:
     def has_inspectometer_battery(self, state: CollectionState) -> bool:
         return state.has("Inspectometer Battery", self.player)
 
+    # Without the overhaul the battery is the one key to the whole map, so most Act 3 rules
+    # collapse to owning it.
     def has_act3_missable_check_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.act3_overhaul:
+        if self.act3_overhauled:
             return True
-        return state.has("Inspectometer Battery", self.player)
+        return self.has_inspectometer_battery(state)
 
     def has_act3_bridge_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.act3_overhaul:
+        if self.act3_overhauled:
             return state.has("Act 3 Bridge Repair", self.player)
-        return state.has("Inspectometer Battery", self.player)
+        return self.has_inspectometer_battery(state)
 
     def has_filthy_corpse_world_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.act3_overhaul:
+        if self.act3_overhauled:
             return True
-        return state.has("Inspectometer Battery", self.player)
+        return self.has_inspectometer_battery(state)
 
     def has_archivist_requirements(self, state: CollectionState) -> bool:
         return self.has_filthy_corpse_world_requirements(state) and state.has("Quill", self.player)
 
     def has_gaudy_gem_land_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.act3_overhaul:
+        if self.act3_overhauled:
             return self.has_act3_bridge_requirements(state) and state.has("Gems Module", self.player)
         return self.has_gems_and_battery(state)
 
     def has_resplendent_bastion_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.act3_overhaul:
+        if self.act3_overhauled:
             return self.has_act3_bridge_requirements(state) and state.has("Resplendent Bastion Gate", self.player)
         return self.has_gems_and_battery(state)
 
@@ -420,10 +466,20 @@ class InscryptionRules:
         return lambda state: state.has("Holo Pelt", self.player, count) and \
             self.has_resplendent_bastion_requirements(state)
 
+    # Some Act 3 checks are spread over the map or cost money to buy, so they are gated on how
+    # much of Botopia is open rather than on one specific area.
+    def count_act3_areas_open(self, state: CollectionState,
+                              *areas: Callable[[CollectionState], bool]) -> int:
+        return sum(area(state) for area in areas)
+
     def has_vessel_upgrade_requirements(self, count: int) -> Callable[[CollectionState], bool]:
-        return lambda state: (int(self.has_resplendent_bastion_requirements(state)) + \
-            int(self.has_inspectometer_battery(state)) + int(self.has_archivist_requirements(state)) + \
-            int(self.has_gaudy_gem_land_requirements(state))) >= count
+        return lambda state: self.count_act3_areas_open(
+            state,
+            self.has_resplendent_bastion_requirements,
+            self.has_inspectometer_battery,
+            self.has_archivist_requirements,
+            self.has_gaudy_gem_land_requirements
+        ) >= count
 
     # Available as soon as the hut can be opened and eastern Botopia reached, not at the end of the
     # act. Mirrors the Bone Lord room, the other key-gated room on that side.
@@ -439,21 +495,25 @@ class InscryptionRules:
             self.has_archivist_requirements(state) and self.has_gaudy_gem_land_requirements(state)
 
     def has_goobert_painting_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.enable_act_1:
-            return self.has_trapper_requirements(state) and self.has_resplendent_bastion_requirements(state) and \
-                self.has_inspectometer_battery(state)
+        if self.world.options.enable_act_1 and not self.has_trapper_requirements(state):
+            return False
         return self.has_resplendent_bastion_requirements(state) and self.has_inspectometer_battery(state)
 
     def has_act3_shop_requirements(self, state: CollectionState) -> bool:
-        return int(self.has_resplendent_bastion_requirements(state)) + \
-            int(self.has_inspectometer_battery(state)) + int(self.has_filthy_corpse_world_requirements(state)) + \
-            int(self.has_gaudy_gem_land_requirements(state)) >= 3
-  
+        return self.count_act3_areas_open(
+            state,
+            self.has_resplendent_bastion_requirements,
+            self.has_inspectometer_battery,
+            self.has_filthy_corpse_world_requirements,
+            self.has_gaudy_gem_land_requirements
+        ) >= 3
+
+
     def has_ourobot_requirements(self, state: CollectionState) -> bool:
         return self.has_gaudy_gem_land_requirements(state) and self.has_act3_shop_requirements(state)
 
     def has_act1_requirements(self, state: CollectionState) -> bool:
-        if self.world.options.enable_act_1 and self.world.options.act_unlocks == ActUnlocks.option_items:
+        if self.world.options.enable_act_1 and self.acts_unlocked_by_items:
             return state.has("Act 1", self.player)
         return True
 
@@ -465,9 +525,9 @@ class InscryptionRules:
 
     def has_act2_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_2:
-            if self.world.options.act_unlocks == ActUnlocks.option_items:
+            if self.acts_unlocked_by_items:
                 return state.has("Act 2", self.player)
-            elif self.world.options.act_unlocks == ActUnlocks.option_sequential:
+            if self.acts_unlocked_sequentially:
                 return self.beat_act1_requirements(state)
         return True
     
@@ -483,9 +543,9 @@ class InscryptionRules:
 
     def has_act3_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_3:
-            if self.world.options.act_unlocks == ActUnlocks.option_items:
+            if self.acts_unlocked_by_items:
                 return state.has("Act 3", self.player)
-            elif self.world.options.act_unlocks == ActUnlocks.option_sequential:
+            if self.acts_unlocked_sequentially:
                 return self.beat_act2_requirements(state)
         return True
 
@@ -495,21 +555,14 @@ class InscryptionRules:
         return True
 
     def has_epilogue_requirements(self, state: CollectionState) -> bool:
-        total_acts = self.world.options.enable_act_1.__int__() + self.world.options.enable_act_2.__int__() \
-                    + self.world.options.enable_act_3.__int__()
-        act1 = self.world.options.enable_act_1.__bool__() and self.beat_act1_requirements(state)
-        act2 = self.world.options.enable_act_2.__bool__() and self.beat_act2_requirements(state)
-        act3 = self.world.options.enable_act_3.__bool__() and self.beat_act3_requirements(state)
-        required_acts = self.world.options.goal.__int__() + 1
-        if required_acts > total_acts: required_acts = total_acts # required acts always =< total acts
-
-        if required_acts == 1:
-            return act1 or act2 or act3
-        if required_acts == 2:
-            return (act1 and act2) or (act1 and act3) or (act2 and act3)
-        if required_acts == 3:
-            return act1 and act2 and act3
-        return True
+        enabled_acts = [self.world.options.enable_act_1, self.world.options.enable_act_2,
+                        self.world.options.enable_act_3]
+        beat_rules = [self.beat_act1_requirements, self.beat_act2_requirements, self.beat_act3_requirements]
+        acts_beaten = sum(bool(enabled) and beat_rule(state)
+                          for enabled, beat_rule in zip(enabled_acts, beat_rules))
+        # The goal is a zero-based count of acts to beat, capped at how many are enabled.
+        required_acts = min(int(self.world.options.goal) + 1, sum(bool(act) for act in enabled_acts))
+        return acts_beaten >= required_acts
 
     # With release on act completion the mod hands over an act's remaining checks the moment the
     # act is beaten, so every check is reachable either its normal way or as soon as its act can
@@ -541,8 +594,7 @@ class InscryptionRules:
                 if loc.name in self.location_rules:
                     loc.access_rule = self.location_rules[loc.name]
         if self.world.options.enable_act_1:
-            if self.world.options.randomize_nodes or \
-                self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            if self.act1_randomized:
                 self.world.get_location("Act 1 - Painting 1").access_rule = self.has_prospector_requirements
                 self.world.get_location("Act 1 - Painting 2").access_rule = self.has_painting_2_requirements
                 self.world.get_location("Act 1 - Painting 3").access_rule = self.has_painting_3_requirements
@@ -553,8 +605,7 @@ class InscryptionRules:
                 self.world.get_location("Act 1 - Painting 2").progress_type = LocationProgressType.EXCLUDED
                 self.world.get_location("Act 1 - Painting 3").progress_type = LocationProgressType.EXCLUDED
         elif self.world.options.enable_act_3:
-            if self.world.options.randomize_nodes or \
-                self.world.options.randomize_challenges != RandomizeChallenges.option_disable:
+            if self.act1_randomized:
                 self.world.get_location("Act 3 - Goobert's Painting").progress_type = LocationProgressType.EXCLUDED
 
         if self.world.options.release_on_act_completion:
