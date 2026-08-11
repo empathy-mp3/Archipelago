@@ -88,9 +88,8 @@ def launch(exe: Sequence[str], in_terminal: bool = False) -> bool:
                 subprocess.Popen([terminal, "-e", lib_path_setter + shlex.join(exe)], env=env)
                 return True
         elif is_macos:
-            # `open -a Terminal.app <args>` treats each arg as a separate file to open with Terminal,
-            # rather than as a single command line -- it does not forward arguments to a program.
-            # AppleScript's `do script` is the correct way to run a command line in a new Terminal window.
+            # `open -a Terminal.app <args>` treats each arg as a file to open, not as a command line.
+            # AppleScript's `do script` is the correct way to run one in a new Terminal window.
             cmd = shlex.join(exe).replace("\\", "\\\\").replace('"', '\\"')
             subprocess.Popen(["osascript", "-e", f'tell application "Terminal" to do script "{cmd}"'])
             return True

@@ -564,9 +564,8 @@ class InscryptionRules:
         required_acts = min(int(self.world.options.goal) + 1, sum(bool(act) for act in enabled_acts))
         return acts_beaten >= required_acts
 
-    # With release on act completion the mod hands over an act's remaining checks the moment the
-    # act is beaten, so every check is reachable either its normal way or as soon as its act can
-    # be finished. Applied last, so it also covers the per-option overrides set below.
+    # The mod hands over an act's remaining checks the moment it is beaten, so every check is
+    # reachable its normal way or once its act can be finished. Applied last, over the overrides.
     def apply_act_release_rules(self) -> None:
         beat_rules = {
             "Act 1": self.beat_act1_requirements,

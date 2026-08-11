@@ -238,9 +238,8 @@ act_items: List[ItemDict] = [
      'classification': ItemClassification.progression},
 ]
 
-# Currency and card packs only have an effect in the act they belong to, so each act draws
-# from its own pool. This keeps a single act's progress restorable by counting items received,
-# and stops one act's spending from consuming another's.
+# Currency and card packs only have an effect in their own act, so each act draws from its own
+# pool: one act's progress stays restorable, and its spending cannot consume another's.
 filler_items: List[ItemDict] = [
     {'name': "Act 1 Currency",
      'count': 1,
