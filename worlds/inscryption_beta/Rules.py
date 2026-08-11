@@ -227,27 +227,34 @@ class InscryptionRules:
     # Act 1 battles are gated on a points budget: every item that makes a run easier is worth
     # points, and each battle needs a threshold set by which Act 1 options are on. Only the four
     # boss rules pass is_boss; the region rules gate that region's ordinary battles.
-    def act1_battle_points(self, state: CollectionState, is_boss: bool, area2: bool) -> int:
+    def act1_battle_points(self, state: CollectionState, is_boss: bool, is_area_1: bool) -> int:
         points = 0
+
         for item, value in self.act1_item_values.items():
             if state.has(item, self.player): points += value
+
         for item, values in self.act1_progressive_values.items():
             for copy, value in enumerate(values, start=1):
                 if state.has(item, self.player, copy): points += value
+
         for item, value in (self.act1_boss_item_values if is_boss else self.act1_regular_item_values).items():
             if state.has(item, self.player): points += value
-        if area2:
+
+        if not is_area_1:
             # The base game only spawns these nodes from the wetlands on, so they can only have
             # helped a battle in the wetlands or later.
             if state.has_all(["Sacrifice Stones Node", "Goobert Node"], self.player): points += 1
+
             for item, value in self.act1_area2_values.items():
                 if state.has(item, self.player): points += value
+
         if state.has_all(["Squirrel Totem Head", "Woodcarver Node"], self.player): points += 3
         if state.has_all(["Smaller Backpack Challenge", "Backpack Node"], self.player): points += 1
+
         return points
 
-    def act1_battle_requirements(self, state: CollectionState, amount: int, is_boss: bool, area2: bool) -> bool:
-        return self.act1_battle_points(state, is_boss, area2) >= amount
+    def act1_battle_requirements(self, state: CollectionState, amount: int, is_boss: bool, is_area_1: bool) -> bool:
+        return self.act1_battle_points(state, is_boss, is_area_1) >= amount
 
     # Thresholds are tuned per option combination. None means neither option is on, so Act 1
     # runs at vanilla difficulty and its battles are free.
@@ -288,14 +295,14 @@ class InscryptionRules:
         # exactly the points they contribute, cancelling them back out.
         cancelled = state.count("Progressive Candle", self.player) * 3 + \
             state.count("Backpack Node", self.player) * 2
-        return self.act1_battle_requirements(state, 3 + cancelled, is_boss=False, area2=False)
+        return self.act1_battle_requirements(state, 3 + cancelled, is_boss=False, is_area_1=True)
 
     def has_prospector_requirements(self, state: CollectionState) -> bool:
         needed = self.act1_points_needed(both=6, challenges_only=4, nodes_only=4)
         if needed is None:
             return True
         needed += self.act1_grizzly_penalty(state, PROSPECTOR)
-        return self.act1_battle_requirements(state, needed, is_boss=True, area2=False) and \
+        return self.act1_battle_requirements(state, needed, is_boss=True, is_area_1=True) and \
             self.has_later_woodlands_requirements(state) and \
             self.bypass_grizzly_requirements(state, PROSPECTOR)
 
@@ -303,7 +310,7 @@ class InscryptionRules:
         needed = self.act1_points_needed(both=13, challenges_only=8, nodes_only=5)
         if needed is None:
             return True
-        return self.act1_battle_requirements(state, needed, is_boss=False, area2=True) and \
+        return self.act1_battle_requirements(state, needed, is_boss=False, is_area_1=False) and \
             self.has_prospector_requirements(state)
 
     def has_angler_requirements(self, state: CollectionState) -> bool:
@@ -311,14 +318,14 @@ class InscryptionRules:
         if needed is None:
             return True
         needed += self.act1_grizzly_penalty(state, ANGLER)
-        return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
+        return self.act1_battle_requirements(state, needed, is_boss=True, is_area_1=False) and \
             self.bypass_grizzly_requirements(state, ANGLER)
 
     def has_snow_line_requirements(self, state: CollectionState) -> bool:
         needed = self.act1_points_needed(both=23, challenges_only=17, nodes_only=8)
         if needed is None:
             return True
-        return self.act1_battle_requirements(state, needed, is_boss=False, area2=True) and \
+        return self.act1_battle_requirements(state, needed, is_boss=False, is_area_1=False) and \
             self.has_angler_requirements(state)
 
     def has_trapper_requirements(self, state: CollectionState) -> bool:
@@ -326,14 +333,14 @@ class InscryptionRules:
         if needed is None:
             return True
         needed += self.act1_grizzly_penalty(state, TRAPPER)
-        return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
+        return self.act1_battle_requirements(state, needed, is_boss=True, is_area_1=False) and \
             self.bypass_grizzly_requirements(state, TRAPPER)
 
     def has_leshy_requirements(self, state: CollectionState) -> bool:
         needed = self.act1_points_needed(both=33, challenges_only=27, nodes_only=12)
         if needed is None:
             return True
-        return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
+        return self.act1_battle_requirements(state, needed, is_boss=True, is_area_1=False) and \
             self.has_trapper_requirements(state)
 
     # Consumable checks are the items a run picks up off the map, which only exist while the

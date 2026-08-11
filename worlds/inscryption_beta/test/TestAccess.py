@@ -247,14 +247,14 @@ class AccessTestTotemChallengeOnBosses(InscryptionTestBase):
         rules = InscryptionRules(self.world)
         state = self.multiworld.state
         self.collect_by_name(self.base_items)
-        self.assertEqual(rules.act1_battle_points(state, is_boss=True, area2=True), 27)
+        self.assertEqual(rules.act1_battle_points(state, is_boss=True, is_area_1=False), 27)
         self.assertFalse(rules.has_angler_requirements(state))
 
         # All Totem Battles only turns regular map nodes into totem battles, so it is worth
         # nothing to a boss and cannot move any rule that evaluates one.
         self.collect_by_name("All Totem Battles Challenge")
-        self.assertEqual(rules.act1_battle_points(state, is_boss=True, area2=True), 27)
-        self.assertEqual(rules.act1_battle_points(state, is_boss=False, area2=True), 30)
+        self.assertEqual(rules.act1_battle_points(state, is_boss=True, is_area_1=False), 27)
+        self.assertEqual(rules.act1_battle_points(state, is_boss=False, is_area_1=False), 30)
         self.assertFalse(rules.has_angler_requirements(state))
 
         # An item that does help the boss tips the same fight over.
@@ -268,15 +268,15 @@ class AccessTestTotemChallengeOnBosses(InscryptionTestBase):
         state = self.multiworld.state
         self.collect_by_name(self.base_items)
 
-        before = rules.act1_battle_points(state, is_boss=False, area2=True)
+        before = rules.act1_battle_points(state, is_boss=False, is_area_1=False)
         self.collect_by_name("All Totem Battles Challenge")
-        self.assertEqual(rules.act1_battle_points(state, is_boss=False, area2=True), before + 3)
+        self.assertEqual(rules.act1_battle_points(state, is_boss=False, is_area_1=False), before + 3)
 
         # ...and neither boss-only item does anything for a regular battle.
-        regular = rules.act1_battle_points(state, is_boss=False, area2=True)
+        regular = rules.act1_battle_points(state, is_boss=False, is_area_1=False)
         self.collect_by_name(["Boss Totems Challenge", "Greater Smoke"])
-        self.assertEqual(rules.act1_battle_points(state, is_boss=False, area2=True), regular)
-        self.assertEqual(rules.act1_battle_points(state, is_boss=True, area2=True), regular - 3 + 4)
+        self.assertEqual(rules.act1_battle_points(state, is_boss=False, is_area_1=False), regular)
+        self.assertEqual(rules.act1_battle_points(state, is_boss=True, is_area_1=False), regular - 3 + 4)
 
 class AccessTestWetlandsAreaTwoNodes(InscryptionTestBase):
     options = {
