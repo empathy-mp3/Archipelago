@@ -17,6 +17,20 @@ GRIZZLY_PENALTY = 10
 WOODLANDS_CANCELLED = ("Progressive Candle", "Backpack Node")
 
 
+# Answers as though the player holds nothing but the named items, so act1_battle_points can be
+# asked what those alone are worth. Only the lookups that function makes are implemented.
+class _OnlyItems:
+    def __init__(self, state: CollectionState, items: Tuple[str, ...]) -> None:
+        self.state = state
+        self.items = frozenset(items)
+
+    def has(self, item: str, player: int, count: int = 1) -> bool:
+        return item in self.items and self.state.has(item, player, count)
+
+    def has_all(self, items, player: int) -> bool:
+        return all(self.has(item, player) for item in items)
+
+
 # Based on The Messenger's implementation
 class InscryptionRules:
     player: int
@@ -259,26 +273,11 @@ class InscryptionRules:
     def act1_battle_requirements(self, state: CollectionState, amount: int, is_boss: bool, is_beyond_area1: bool) -> bool:
         return self.act1_battle_points(state, is_boss, is_beyond_area1) >= amount
 
-    # What the named items are contributing to the total above, for a rule that has to hand their
-    # points back. Read from the same tables, so a retune cannot leave the two disagreeing.
+    # What the named items are worth, asked of the points function itself rather than restated,
+    # so a change to any value, context table or pairing is picked up here for free.
     def act1_points_from(self, state: CollectionState, items: Tuple[str, ...],
                          is_boss: bool, is_beyond_area1: bool) -> int:
-        points = 0
-
-        tables = [self.act1_item_values,
-                  self.act1_boss_item_values if is_boss else self.act1_regular_item_values]
-        if is_beyond_area1:
-            tables.append(self.act1_beyond_area1_values)
-
-        for table in tables:
-            for item in items:
-                if item in table and state.has(item, self.player): points += table[item]
-
-        for item in items:
-            for copy, value in enumerate(self.act1_progressive_values.get(item, ()), start=1):
-                if state.has(item, self.player, copy): points += value
-
-        return points
+        return self.act1_battle_points(_OnlyItems(state, items), is_boss, is_beyond_area1)
 
     # Thresholds are tuned per option combination. None means neither option is on, so Act 1
     # runs at vanilla difficulty and its battles are free.
