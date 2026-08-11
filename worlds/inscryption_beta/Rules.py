@@ -10,10 +10,8 @@ else:
 # Each Act 1 boss keeps its grizzly phase until this many Progressive Grizzlies are collected.
 PROSPECTOR, ANGLER, TRAPPER = 1, 2, 3
 
-# How far a boss's points threshold rises while it keeps its grizzly phase, and once the
-# All Totem Battles challenge has been turned off.
+# How far a boss's points threshold rises while it keeps its grizzly phase.
 GRIZZLY_PENALTY = 10
-TOTEM_PENALTY = 3
 
 
 # Based on The Messenger's implementation
@@ -199,7 +197,6 @@ class InscryptionRules:
         "Backpack Node": 2,
         "Sacrifice Stones Node": 3,
         "Campfire Node": 3,
-        "All Totem Battles Challenge": 3,
         "Bee Figurine": 3,
         "Extra Candle": 3
     }
@@ -207,6 +204,12 @@ class InscryptionRules:
     act1_boss_item_values: Dict[str, int] = {
         "Greater Smoke": 1,
         "Boss Totems Challenge": 3,
+    }
+
+    # Only ever counted for a regular battle. All Totem Battles turns regular map nodes into
+    # totem battles; Boss Totems, above, is the challenge that puts a totem on a boss.
+    act1_regular_item_values: Dict[str, int] = {
+        "All Totem Battles Challenge": 3
     }
 
     act1_progressive_values: Dict[str, list[int]] = {
@@ -230,9 +233,8 @@ class InscryptionRules:
         for item, values in self.act1_progressive_values.items():
             for copy, value in enumerate(values, start=1):
                 if state.has(item, self.player, copy): points += value
-        if is_boss:
-            for item, value in self.act1_boss_item_values.items():
-                if state.has(item, self.player): points += value
+        for item, value in (self.act1_boss_item_values if is_boss else self.act1_regular_item_values).items():
+            if state.has(item, self.player): points += value
         if area2:
             # The base game only spawns these nodes from the wetlands on, so they can only have
             # helped a battle in the wetlands or later.
@@ -256,11 +258,6 @@ class InscryptionRules:
         if self.nodes_randomized:
             return nodes_only
         return None
-
-    # All Totem Battles only changes regular battles, so on a boss the threshold rises by
-    # exactly the points the item is worth, cancelling it back out.
-    def act1_totem_penalty(self, state: CollectionState) -> int:
-        return TOTEM_PENALTY if state.has("All Totem Battles Challenge", self.player) else 0
 
     # How much extra help a boss needs while it still has its grizzly phase.
     def act1_grizzly_penalty(self, state: CollectionState, boss: int) -> int:
@@ -296,7 +293,7 @@ class InscryptionRules:
         needed = self.act1_points_needed(both=6, challenges_only=4, nodes_only=4)
         if needed is None:
             return True
-        needed += self.act1_totem_penalty(state) + self.act1_grizzly_penalty(state, PROSPECTOR)
+        needed += self.act1_grizzly_penalty(state, PROSPECTOR)
         return self.act1_battle_requirements(state, needed, is_boss=True, area2=False) and \
             self.has_later_woodlands_requirements(state) and \
             self.bypass_grizzly_requirements(state, PROSPECTOR)
@@ -312,7 +309,7 @@ class InscryptionRules:
         needed = self.act1_points_needed(both=18, challenges_only=13, nodes_only=8)
         if needed is None:
             return True
-        needed += self.act1_totem_penalty(state) + self.act1_grizzly_penalty(state, ANGLER)
+        needed += self.act1_grizzly_penalty(state, ANGLER)
         return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
             self.bypass_grizzly_requirements(state, ANGLER)
 
@@ -327,7 +324,7 @@ class InscryptionRules:
         needed = self.act1_points_needed(both=27, challenges_only=22, nodes_only=12)
         if needed is None:
             return True
-        needed += self.act1_totem_penalty(state) + self.act1_grizzly_penalty(state, TRAPPER)
+        needed += self.act1_grizzly_penalty(state, TRAPPER)
         return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
             self.bypass_grizzly_requirements(state, TRAPPER)
 
@@ -335,7 +332,6 @@ class InscryptionRules:
         needed = self.act1_points_needed(both=33, challenges_only=27, nodes_only=12)
         if needed is None:
             return True
-        needed += self.act1_totem_penalty(state)
         return self.act1_battle_requirements(state, needed, is_boss=True, area2=True) and \
             self.has_trapper_requirements(state)
 

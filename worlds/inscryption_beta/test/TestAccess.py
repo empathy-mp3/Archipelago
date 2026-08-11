@@ -250,15 +250,34 @@ class AccessTestTotemChallengeOnBosses(InscryptionTestBase):
         self.assertEqual(rules.act1_battle_points(state, is_boss=True, area2=True), 27)
         self.assertFalse(rules.has_angler_requirements(state))
 
-        # All Totem Battles is worth 3 points, but only helps regular battles, so the boss
-        # threshold rises by 3 as well and the fight must stay out of logic.
+        # All Totem Battles only turns regular map nodes into totem battles, so it is worth
+        # nothing to a boss and cannot move any rule that evaluates one.
         self.collect_by_name("All Totem Battles Challenge")
-        self.assertEqual(rules.act1_battle_points(state, is_boss=True, area2=True), 30)
+        self.assertEqual(rules.act1_battle_points(state, is_boss=True, area2=True), 27)
+        self.assertEqual(rules.act1_battle_points(state, is_boss=False, area2=True), 30)
         self.assertFalse(rules.has_angler_requirements(state))
 
         # An item that does help the boss tips the same fight over.
         self.collect_by_name("Greater Smoke")
         self.assertTrue(rules.has_angler_requirements(state))
+
+    # Every Act 1 rule evaluates as a boss, so none of them may move when it is collected.
+    # The wetlands and snow line took its points without the offsetting penalty the boss
+    # rules applied, which made both three points cheaper than intended.
+    def test_totem_challenge_moves_no_act1_rule(self) -> None:
+        rules = InscryptionRules(self.world)
+        state = self.multiworld.state
+        checked = ["has_later_woodlands_requirements", "has_prospector_requirements",
+                   "has_wetlands_requirements", "has_angler_requirements",
+                   "has_snow_line_requirements", "has_trapper_requirements",
+                   "has_leshy_requirements"]
+        self.collect_by_name(self.base_items)
+        before = {name: getattr(rules, name)(state) for name in checked}
+
+        self.collect_by_name("All Totem Battles Challenge")
+        after = {name: getattr(rules, name)(state) for name in checked}
+
+        self.assertEqual(before, after)
 
 
 class AccessTestWetlandsAreaTwoNodes(InscryptionTestBase):
