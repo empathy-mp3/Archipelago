@@ -288,16 +288,6 @@ class AccessTestTotemChallengeOnBosses(InscryptionTestBase):
         woodlands = rules.act1_battle_points(state, WOODLANDS_BATTLE)
         self.assertEqual(beyond - woodlands, 3)  # both nodes, plus their pairing
 
-    # An ignored item takes its pairings with it, or the fight would still be paid by half of one.
-    def test_ignoring_an_item_drops_its_pairings(self) -> None:
-        rules = InscryptionRules(self.world)
-        state = self.multiworld.state
-        self.collect_by_name(["Backpack Node", "Smaller Backpack Challenge"])
-
-        full = rules.act1_battle_points(state, WOODLANDS_BATTLE)
-        without = rules.act1_battle_points(state, WOODLANDS_BATTLE, ("Backpack Node",))
-        self.assertEqual(full - without, 3)  # the node's 2, plus the 1 its pairing pays
-
 
 class AccessTestWetlandsAreaTwoNodes(InscryptionTestBase):
     options = {

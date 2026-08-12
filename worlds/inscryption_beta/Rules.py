@@ -13,10 +13,6 @@ PROSPECTOR, ANGLER, TRAPPER = 1, 2, 3
 # How far a boss's points threshold rises while it keeps its grizzly phase.
 GRIZZLY_PENALTY = 10
 
-# Worth points in general, but not this early, so the later woodlands hands their points back.
-WOODLANDS_CANCELLED = ("Progressive Candle", "Backpack Node")
-
-
 # The four kinds of Act 1 fight. Which one a rule gates decides what its points may come from:
 # a boss ignores the regular-only items and vice versa, and the woodlands ignores the later nodes.
 class Act1Fight(NamedTuple):
@@ -251,11 +247,9 @@ class InscryptionRules:
 
     # What the player's items are worth to this fight. A boss ignores the regular-only items and
     # a regular battle ignores the boss-only ones; the woodlands ignores what does not spawn yet.
-    # `ignoring` names anything else this particular fight gets nothing from.
-    def act1_battle_points(self, state: CollectionState, fight: Act1Fight,
-                           ignoring: Tuple[str, ...] = ()) -> int:
+    def act1_battle_points(self, state: CollectionState, fight: Act1Fight) -> int:
         def counts(item: str, needed: int = 1) -> bool:
-            return item not in ignoring and state.has(item, self.player, needed)
+            return state.has(item, self.player, needed)
 
         points = 0
 
@@ -319,8 +313,7 @@ class InscryptionRules:
     def has_later_woodlands_requirements(self, state: CollectionState) -> bool:
         if not (self.nodes_randomized and self.challenges_randomized):
             return True
-        # Candles and backpacks do nothing for these early fights, so this one ignores them too.
-        return self.act1_battle_points(state, WOODLANDS_BATTLE, WOODLANDS_CANCELLED) >= 3
+        return self.act1_battle_points(state, WOODLANDS_BATTLE) >= 3
 
     def has_prospector_requirements(self, state: CollectionState) -> bool:
         base = self.act1_points_needed(both=6, challenges_only=4, nodes_only=4)
