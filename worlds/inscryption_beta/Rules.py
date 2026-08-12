@@ -300,8 +300,14 @@ class InscryptionRules:
 
         return withheld
 
-    def act1_battle_requirements(self, state: CollectionState, amount: int, fight: Act1Fight) -> bool:
-        return self.act1_battle_points(state) >= amount + self.act1_points_withheld(state, fight)
+    # The bar a fight actually sets, in one expression: what it was tuned to, plus the points it
+    # must not be paid with, plus a boss's grizzly penalty and anything too early to help.
+    def act1_threshold(self, state: CollectionState, base: int, fight: Act1Fight,
+                       grizzly: Optional[int] = None, cancels: Tuple[str, ...] = ()) -> int:
+        return (base
+                + self.act1_points_withheld(state, fight)
+                + (self.act1_grizzly_penalty(state, grizzly) if grizzly else 0)
+                + self.act1_points_from(state, cancels))
 
     # What the named items are worth, asked of the points function itself rather than restated,
     # so a change to any value, context table or pairing is picked up here for free.
@@ -343,55 +349,57 @@ class InscryptionRules:
     def has_later_woodlands_requirements(self, state: CollectionState) -> bool:
         if not (self.nodes_randomized and self.challenges_randomized):
             return True
-        # Candles and backpacks do nothing for these early fights, so the threshold rises by
-        # exactly the points they contribute, cancelling them back out.
-        cancelled = self.act1_points_from(state, WOODLANDS_CANCELLED)
-        return self.act1_battle_requirements(state, 3 + cancelled, WOODLANDS_BATTLE)
+        # Candles and backpacks do nothing for these early fights, so their points are cancelled.
+        needed = self.act1_threshold(state, 3, WOODLANDS_BATTLE, cancels=WOODLANDS_CANCELLED)
+        return self.act1_battle_points(state) >= needed
 
     def has_prospector_requirements(self, state: CollectionState) -> bool:
-        needed = self.act1_points_needed(both=6, challenges_only=4, nodes_only=4)
-        if needed is None:
+        base = self.act1_points_needed(both=6, challenges_only=4, nodes_only=4)
+        if base is None:
             return True
-        needed += self.act1_grizzly_penalty(state, PROSPECTOR)
-        return self.act1_battle_requirements(state, needed, WOODLANDS_BOSS) and \
+        needed = self.act1_threshold(state, base, WOODLANDS_BOSS, grizzly=PROSPECTOR)
+        return self.act1_battle_points(state) >= needed and \
             self.has_later_woodlands_requirements(state) and \
             self.bypass_grizzly_requirements(state, PROSPECTOR)
 
     def has_wetlands_requirements(self, state: CollectionState) -> bool:
-        needed = self.act1_points_needed(both=13, challenges_only=8, nodes_only=5)
-        if needed is None:
+        base = self.act1_points_needed(both=13, challenges_only=8, nodes_only=5)
+        if base is None:
             return True
-        return self.act1_battle_requirements(state, needed, LATER_BATTLE) and \
+        needed = self.act1_threshold(state, base, LATER_BATTLE)
+        return self.act1_battle_points(state) >= needed and \
             self.has_prospector_requirements(state)
 
     def has_angler_requirements(self, state: CollectionState) -> bool:
-        needed = self.act1_points_needed(both=18, challenges_only=13, nodes_only=8)
-        if needed is None:
+        base = self.act1_points_needed(both=18, challenges_only=13, nodes_only=8)
+        if base is None:
             return True
-        needed += self.act1_grizzly_penalty(state, ANGLER)
-        return self.act1_battle_requirements(state, needed, LATER_BOSS) and \
+        needed = self.act1_threshold(state, base, LATER_BOSS, grizzly=ANGLER)
+        return self.act1_battle_points(state) >= needed and \
             self.bypass_grizzly_requirements(state, ANGLER)
 
     def has_snow_line_requirements(self, state: CollectionState) -> bool:
-        needed = self.act1_points_needed(both=23, challenges_only=17, nodes_only=8)
-        if needed is None:
+        base = self.act1_points_needed(both=23, challenges_only=17, nodes_only=8)
+        if base is None:
             return True
-        return self.act1_battle_requirements(state, needed, LATER_BATTLE) and \
+        needed = self.act1_threshold(state, base, LATER_BATTLE)
+        return self.act1_battle_points(state) >= needed and \
             self.has_angler_requirements(state)
 
     def has_trapper_requirements(self, state: CollectionState) -> bool:
-        needed = self.act1_points_needed(both=27, challenges_only=22, nodes_only=12)
-        if needed is None:
+        base = self.act1_points_needed(both=27, challenges_only=22, nodes_only=12)
+        if base is None:
             return True
-        needed += self.act1_grizzly_penalty(state, TRAPPER)
-        return self.act1_battle_requirements(state, needed, LATER_BOSS) and \
+        needed = self.act1_threshold(state, base, LATER_BOSS, grizzly=TRAPPER)
+        return self.act1_battle_points(state) >= needed and \
             self.bypass_grizzly_requirements(state, TRAPPER)
 
     def has_leshy_requirements(self, state: CollectionState) -> bool:
-        needed = self.act1_points_needed(both=33, challenges_only=27, nodes_only=12)
-        if needed is None:
+        base = self.act1_points_needed(both=33, challenges_only=27, nodes_only=12)
+        if base is None:
             return True
-        return self.act1_battle_requirements(state, needed, LATER_BOSS) and \
+        needed = self.act1_threshold(state, base, LATER_BOSS)
+        return self.act1_battle_points(state) >= needed and \
             self.has_trapper_requirements(state)
 
     # Consumable checks are the items a run picks up off the map, which only exist while the
