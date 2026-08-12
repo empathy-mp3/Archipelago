@@ -1,4 +1,4 @@
-from typing import Dict, Callable, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, Callable, NamedTuple, Optional, Tuple, TYPE_CHECKING
 from BaseClasses import CollectionState, LocationProgressType
 from .Options import ActUnlocks, PaintingChecksBalancing, RandomizeChallenges, Act2RandomizeBridge
 
@@ -15,6 +15,18 @@ GRIZZLY_PENALTY = 10
 
 # Worth points in general, but not this early, so the later woodlands hands their points back.
 WOODLANDS_CANCELLED = ("Progressive Candle", "Backpack Node")
+
+
+# The four kinds of Act 1 fight. Which one a rule gates decides what its points may come from:
+# a boss ignores the regular-only items and vice versa, and the woodlands ignores the later nodes.
+class Act1Fight(NamedTuple):
+    is_boss: bool
+    is_beyond_area1: bool
+
+WOODLANDS_BATTLE = Act1Fight(False, False)
+WOODLANDS_BOSS = Act1Fight(True, False)
+LATER_BATTLE = Act1Fight(False, True)
+LATER_BOSS = Act1Fight(True, True)
 
 # Answers as though the player holds nothing but the named items, so act1_battle_points can be
 # asked what those alone are worth. Only the lookups that function makes are implemented.
@@ -273,14 +285,14 @@ class InscryptionRules:
 
     # What this fight must not be paid with: the items belonging to the other kind of battle, and
     # everything that does not exist yet before the wetlands. Its threshold rises by that much.
-    def act1_points_withheld(self, state: CollectionState, is_boss: bool, is_beyond_area1: bool) -> int:
+    def act1_points_withheld(self, state: CollectionState, fight: Act1Fight) -> int:
         withheld = 0
 
-        for item, value in (self.act1_regular_item_values if is_boss
+        for item, value in (self.act1_regular_item_values if fight.is_boss
                             else self.act1_boss_item_values).items():
             if state.has(item, self.player): withheld += value
 
-        if not is_beyond_area1:
+        if not fight.is_beyond_area1:
             for item, value in self.act1_beyond_area1_values.items():
                 if state.has(item, self.player): withheld += value
             for pair, value in self.act1_beyond_area1_pair_values.items():
@@ -288,10 +300,8 @@ class InscryptionRules:
 
         return withheld
 
-    def act1_battle_requirements(self, state: CollectionState, amount: int,
-                                 is_boss: bool, is_beyond_area1: bool) -> bool:
-        needed = amount + self.act1_points_withheld(state, is_boss, is_beyond_area1)
-        return self.act1_battle_points(state) >= needed
+    def act1_battle_requirements(self, state: CollectionState, amount: int, fight: Act1Fight) -> bool:
+        return self.act1_battle_points(state) >= amount + self.act1_points_withheld(state, fight)
 
     # What the named items are worth, asked of the points function itself rather than restated,
     # so a change to any value, context table or pairing is picked up here for free.
@@ -336,14 +346,14 @@ class InscryptionRules:
         # Candles and backpacks do nothing for these early fights, so the threshold rises by
         # exactly the points they contribute, cancelling them back out.
         cancelled = self.act1_points_from(state, WOODLANDS_CANCELLED)
-        return self.act1_battle_requirements(state, 3 + cancelled, is_boss=False, is_beyond_area1=False)
+        return self.act1_battle_requirements(state, 3 + cancelled, WOODLANDS_BATTLE)
 
     def has_prospector_requirements(self, state: CollectionState) -> bool:
         needed = self.act1_points_needed(both=6, challenges_only=4, nodes_only=4)
         if needed is None:
             return True
         needed += self.act1_grizzly_penalty(state, PROSPECTOR)
-        return self.act1_battle_requirements(state, needed, is_boss=True, is_beyond_area1=False) and \
+        return self.act1_battle_requirements(state, needed, WOODLANDS_BOSS) and \
             self.has_later_woodlands_requirements(state) and \
             self.bypass_grizzly_requirements(state, PROSPECTOR)
 
@@ -351,7 +361,7 @@ class InscryptionRules:
         needed = self.act1_points_needed(both=13, challenges_only=8, nodes_only=5)
         if needed is None:
             return True
-        return self.act1_battle_requirements(state, needed, is_boss=False, is_beyond_area1=True) and \
+        return self.act1_battle_requirements(state, needed, LATER_BATTLE) and \
             self.has_prospector_requirements(state)
 
     def has_angler_requirements(self, state: CollectionState) -> bool:
@@ -359,14 +369,14 @@ class InscryptionRules:
         if needed is None:
             return True
         needed += self.act1_grizzly_penalty(state, ANGLER)
-        return self.act1_battle_requirements(state, needed, is_boss=True, is_beyond_area1=True) and \
+        return self.act1_battle_requirements(state, needed, LATER_BOSS) and \
             self.bypass_grizzly_requirements(state, ANGLER)
 
     def has_snow_line_requirements(self, state: CollectionState) -> bool:
         needed = self.act1_points_needed(both=23, challenges_only=17, nodes_only=8)
         if needed is None:
             return True
-        return self.act1_battle_requirements(state, needed, is_boss=False, is_beyond_area1=True) and \
+        return self.act1_battle_requirements(state, needed, LATER_BATTLE) and \
             self.has_angler_requirements(state)
 
     def has_trapper_requirements(self, state: CollectionState) -> bool:
@@ -374,14 +384,14 @@ class InscryptionRules:
         if needed is None:
             return True
         needed += self.act1_grizzly_penalty(state, TRAPPER)
-        return self.act1_battle_requirements(state, needed, is_boss=True, is_beyond_area1=True) and \
+        return self.act1_battle_requirements(state, needed, LATER_BOSS) and \
             self.bypass_grizzly_requirements(state, TRAPPER)
 
     def has_leshy_requirements(self, state: CollectionState) -> bool:
         needed = self.act1_points_needed(both=33, challenges_only=27, nodes_only=12)
         if needed is None:
             return True
-        return self.act1_battle_requirements(state, needed, is_boss=True, is_beyond_area1=True) and \
+        return self.act1_battle_requirements(state, needed, LATER_BOSS) and \
             self.has_trapper_requirements(state)
 
     # Consumable checks are the items a run picks up off the map, which only exist while the
