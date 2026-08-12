@@ -16,7 +16,6 @@ GRIZZLY_PENALTY = 10
 # Worth points in general, but not this early, so the later woodlands hands their points back.
 WOODLANDS_CANCELLED = ("Progressive Candle", "Backpack Node")
 
-
 # Answers as though the player holds nothing but the named items, so act1_battle_points can be
 # asked what those alone are worth. Only the lookups that function makes are implemented.
 class _OnlyItems:
@@ -241,43 +240,63 @@ class InscryptionRules:
         "Bone Altar Node": 1
     }
 
-    # Act 1 battles are gated on a points budget: every item that makes a run easier is worth
-    # points, and each battle needs a threshold set by which Act 1 options are on. Only the four
-    # boss rules pass is_boss; the region rules gate that region's ordinary battles.
-    def act1_battle_points(self, state: CollectionState, is_boss: bool, is_beyond_area1: bool) -> int:
+    # Pairs that pay only when both halves are held. The second table is worth nothing before the
+    # wetlands, where the base game has not started spawning those nodes.
+    act1_pair_values: Dict[Tuple[str, str], int] = {
+        ("Squirrel Totem Head", "Woodcarver Node"): 3,
+        ("Smaller Backpack Challenge", "Backpack Node"): 1
+    }
+
+    act1_beyond_area1_pair_values: Dict[Tuple[str, str], int] = {
+        ("Sacrifice Stones Node", "Goobert Node"): 1
+    }
+
+    # What everything the player holds is worth, before any fight decides what applies to it.
+    # Act 1 battles are gated on that total against a threshold set by which Act 1 options are on.
+    def act1_battle_points(self, state: CollectionState) -> int:
         points = 0
 
-        for item, value in self.act1_item_values.items():
-            if state.has(item, self.player): points += value
+        for table in (self.act1_item_values, self.act1_boss_item_values,
+                      self.act1_regular_item_values, self.act1_beyond_area1_values):
+            for item, value in table.items():
+                if state.has(item, self.player): points += value
 
         for item, values in self.act1_progressive_values.items():
             for copy, value in enumerate(values, start=1):
                 if state.has(item, self.player, copy): points += value
 
-        for item, value in (self.act1_boss_item_values if is_boss else self.act1_regular_item_values).items():
-            if state.has(item, self.player): points += value
-
-        if is_beyond_area1:
-            # The base game only spawns these nodes from the wetlands on, so they can only have
-            # helped a battle in the wetlands or later.
-            if state.has_all(["Sacrifice Stones Node", "Goobert Node"], self.player): points += 1
-
-            for item, value in self.act1_beyond_area1_values.items():
-                if state.has(item, self.player): points += value
-
-        if state.has_all(["Squirrel Totem Head", "Woodcarver Node"], self.player): points += 3
-        if state.has_all(["Smaller Backpack Challenge", "Backpack Node"], self.player): points += 1
+        for pair_table in (self.act1_pair_values, self.act1_beyond_area1_pair_values):
+            for pair, value in pair_table.items():
+                if state.has_all(pair, self.player): points += value
 
         return points
 
-    def act1_battle_requirements(self, state: CollectionState, amount: int, is_boss: bool, is_beyond_area1: bool) -> bool:
-        return self.act1_battle_points(state, is_boss, is_beyond_area1) >= amount
+    # What this fight must not be paid with: the items belonging to the other kind of battle, and
+    # everything that does not exist yet before the wetlands. Its threshold rises by that much.
+    def act1_points_withheld(self, state: CollectionState, is_boss: bool, is_beyond_area1: bool) -> int:
+        withheld = 0
+
+        for item, value in (self.act1_regular_item_values if is_boss
+                            else self.act1_boss_item_values).items():
+            if state.has(item, self.player): withheld += value
+
+        if not is_beyond_area1:
+            for item, value in self.act1_beyond_area1_values.items():
+                if state.has(item, self.player): withheld += value
+            for pair, value in self.act1_beyond_area1_pair_values.items():
+                if state.has_all(pair, self.player): withheld += value
+
+        return withheld
+
+    def act1_battle_requirements(self, state: CollectionState, amount: int,
+                                 is_boss: bool, is_beyond_area1: bool) -> bool:
+        needed = amount + self.act1_points_withheld(state, is_boss, is_beyond_area1)
+        return self.act1_battle_points(state) >= needed
 
     # What the named items are worth, asked of the points function itself rather than restated,
     # so a change to any value, context table or pairing is picked up here for free.
-    def act1_points_from(self, state: CollectionState, items: Tuple[str, ...],
-                         is_boss: bool, is_beyond_area1: bool) -> int:
-        return self.act1_battle_points(_OnlyItems(state, items), is_boss, is_beyond_area1)
+    def act1_points_from(self, state: CollectionState, items: Tuple[str, ...]) -> int:
+        return self.act1_battle_points(_OnlyItems(state, items))
 
     # Thresholds are tuned per option combination. None means neither option is on, so Act 1
     # runs at vanilla difficulty and its battles are free.
@@ -316,8 +335,7 @@ class InscryptionRules:
             return True
         # Candles and backpacks do nothing for these early fights, so the threshold rises by
         # exactly the points they contribute, cancelling them back out.
-        cancelled = self.act1_points_from(state, WOODLANDS_CANCELLED,
-                                          is_boss=False, is_beyond_area1=False)
+        cancelled = self.act1_points_from(state, WOODLANDS_CANCELLED)
         return self.act1_battle_requirements(state, 3 + cancelled, is_boss=False, is_beyond_area1=False)
 
     def has_prospector_requirements(self, state: CollectionState) -> bool:

@@ -247,36 +247,86 @@ class AccessTestTotemChallengeOnBosses(InscryptionTestBase):
         rules = InscryptionRules(self.world)
         state = self.multiworld.state
         self.collect_by_name(self.base_items)
-        self.assertEqual(rules.act1_battle_points(state, is_boss=True, is_beyond_area1=True), 27)
+        self.assertEqual(rules.act1_battle_points(state), 27)
         self.assertFalse(rules.has_angler_requirements(state))
 
-        # All Totem Battles only turns regular map nodes into totem battles, so it is worth
-        # nothing to a boss and cannot move any rule that evaluates one.
+        # All Totem Battles only turns regular map nodes into totem battles. It is still worth
+        # points, but a boss withholds exactly those points, so no boss rule can move.
         self.collect_by_name("All Totem Battles Challenge")
-        self.assertEqual(rules.act1_battle_points(state, is_boss=True, is_beyond_area1=True), 27)
-        self.assertEqual(rules.act1_battle_points(state, is_boss=False, is_beyond_area1=True), 30)
+        self.assertEqual(rules.act1_battle_points(state), 30)
+        self.assertEqual(rules.act1_points_withheld(state, is_boss=True, is_beyond_area1=True), 3)
         self.assertFalse(rules.has_angler_requirements(state))
 
-        # An item that does help the boss tips the same fight over.
+        # An item that does help the boss is not withheld, and tips the same fight over.
         self.collect_by_name("Greater Smoke")
+        self.assertEqual(rules.act1_points_withheld(state, is_boss=True, is_beyond_area1=True), 3)
         self.assertTrue(rules.has_angler_requirements(state))
 
-    # Only the four boss rules pass is_boss. A region rule gates that region's ordinary
-    # battles, so it must count All Totem Battles and must not count the boss-only items.
-    def test_only_boss_rules_take_boss_items(self) -> None:
+    # Only the four boss rules pass is_boss. A region rule gates that region's ordinary battles,
+    # so it withholds the boss-only items and keeps All Totem Battles.
+    def test_a_regular_battle_withholds_the_boss_items(self) -> None:
         rules = InscryptionRules(self.world)
         state = self.multiworld.state
-        self.collect_by_name(self.base_items)
+        self.collect_by_name(self.base_items + ["All Totem Battles Challenge"])
+        self.assertEqual(rules.act1_points_withheld(state, is_boss=False, is_beyond_area1=True), 0)
 
-        before = rules.act1_battle_points(state, is_boss=False, is_beyond_area1=True)
-        self.collect_by_name("All Totem Battles Challenge")
-        self.assertEqual(rules.act1_battle_points(state, is_boss=False, is_beyond_area1=True), before + 3)
-
-        # ...and neither boss-only item does anything for a regular battle.
-        regular = rules.act1_battle_points(state, is_boss=False, is_beyond_area1=True)
         self.collect_by_name(["Boss Totems Challenge", "Greater Smoke"])
-        self.assertEqual(rules.act1_battle_points(state, is_boss=False, is_beyond_area1=True), regular)
-        self.assertEqual(rules.act1_battle_points(state, is_boss=True, is_beyond_area1=True), regular - 3 + 4)
+        self.assertEqual(rules.act1_points_withheld(state, is_boss=False, is_beyond_area1=True), 4)
+        self.assertEqual(rules.act1_points_withheld(state, is_boss=True, is_beyond_area1=True), 3)
+
+    # Nothing that only spawns from the wetlands on may pay for a woodlands fight.
+    def test_the_woodlands_withholds_the_later_nodes(self) -> None:
+        rules = InscryptionRules(self.world)
+        state = self.multiworld.state
+        self.collect_by_name(["Mycologists Node", "Bone Altar Node"])
+        self.assertEqual(rules.act1_points_withheld(state, is_boss=False, is_beyond_area1=False), 2)
+        self.assertEqual(rules.act1_points_withheld(state, is_boss=False, is_beyond_area1=True), 0)
+
+        # ...including the pair that only pays past the woodlands.
+        self.collect_by_name(["Sacrifice Stones Node", "Goobert Node"])
+        self.assertEqual(rules.act1_points_withheld(state, is_boss=False, is_beyond_area1=False), 3)
+
+
+class AccessTestPointsDecomposition(InscryptionTestBase):
+    options = {"randomize_nodes": 1, "randomize_challenges": 2}
+
+    # Points are context-free and each fight raises its threshold by what it withholds. That is
+    # only equivalent to the old context-filtered total if the two always sum back to it, so this
+    # scores every context the long way round and checks the decomposition holds exactly.
+    def test_total_minus_withheld_is_the_context_total(self) -> None:
+        rules = InscryptionRules(self.world)
+        state = self.multiworld.state
+        self.collect_by_name([
+            "Angler Hook", "Oil Painting's Clover Plant", "Dagger", "Woodcarver Node",
+            "Backpack Node", "Sacrifice Stones Node", "Campfire Node", "Bee Figurine",
+            "Extra Candle", "Greater Smoke", "Boss Totems Challenge",
+            "All Totem Battles Challenge", "Mycologists Node", "Bone Altar Node",
+            "Squirrel Totem Head", "Goobert Node", "Smaller Backpack Challenge",
+        ])
+
+        for is_boss in (True, False):
+            for is_beyond in (True, False):
+                expected = 0
+                for item, value in rules.act1_item_values.items():
+                    if state.has(item, self.player): expected += value
+                for item, values in rules.act1_progressive_values.items():
+                    for copy, value in enumerate(values, start=1):
+                        if state.has(item, self.player, copy): expected += value
+                context = rules.act1_boss_item_values if is_boss else rules.act1_regular_item_values
+                for item, value in context.items():
+                    if state.has(item, self.player): expected += value
+                for pair, value in rules.act1_pair_values.items():
+                    if state.has_all(pair, self.player): expected += value
+                if is_beyond:
+                    for item, value in rules.act1_beyond_area1_values.items():
+                        if state.has(item, self.player): expected += value
+                    for pair, value in rules.act1_beyond_area1_pair_values.items():
+                        if state.has_all(pair, self.player): expected += value
+
+                actual = rules.act1_battle_points(state) - \
+                    rules.act1_points_withheld(state, is_boss, is_beyond)
+                self.assertEqual(actual, expected, f"is_boss={is_boss} is_beyond={is_beyond}")
+
 
 class AccessTestWetlandsAreaTwoNodes(InscryptionTestBase):
     options = {
