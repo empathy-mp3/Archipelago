@@ -558,10 +558,13 @@ class InscryptionRules:
                 return self.beat_act1_requirements(state)
         return True
     
+    # Beating the act means beating all four Scrybes, so it inherits each boss's own rule rather
+    # than restating the items. That is what carries the bridge, whichever side the run starts on.
     def beat_act2_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_2:
-            return self.has_act2_requirements(state) and self.has_all_epitaph_pieces(state) and \
-                self.has_camera_and_meat(state) and self.has_monocle(state)
+            return self.has_act2_requirements(state) and self.has_forest_requirements(state) and \
+                self.has_grimora_requirements(state) and self.has_tower_requirements(state) and \
+                self.has_act2_bridge_requirements(state)
         return True
 
     def has_battery_and_quill_or_gems(self, state: CollectionState) -> bool:
