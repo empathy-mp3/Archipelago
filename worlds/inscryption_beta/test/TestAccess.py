@@ -67,7 +67,9 @@ class AccessTestGeneral(InscryptionTestBase):
 
     def test_quill(self) -> None:
         self.assertAccessDependency(
-            ["Act 3 - Boss Archivist", "Act 3 - The Great Transcendence"],
+            ["Act 3 - Boss Archivist", "Act 3 - The Great Transcendence",
+             "Act 3 - Luke's File Entry 1", "Act 3 - Luke's File Entry 2",
+             "Act 3 - Luke's File Entry 3", "Act 3 - Luke's File Entry 4"],
             [["Quill"]]
         )
 
@@ -328,3 +330,31 @@ class AccessTestBalancedPaintings(InscryptionTestBase):
     def test_paintings(self) -> None:
         self.assertAccessDependency(["Act 1 - Painting 2", "Act 1 - Painting 3"],
                                     [["Oil Painting's Clover Plant", "Squirrel Totem Head"]])
+
+
+class AccessTestRandomizedBridgeSequential(InscryptionTestBase):
+    options = {
+        "act2_randomize_bridge": 1,
+        "act_unlocks": 0,
+    }
+
+    def test_beating_act_2_needs_the_bridge(self) -> None:
+        self.assertAccessDependency(
+            ["Act 3 - Boss Photographer", "Act 3 - Boss Archivist", "Act 2 - Boss P03"],
+            [["Act 2 Bridge Repair"]],
+            only_check_listed=True
+        )
+
+
+class AccessTestLeftSideBridgeSequential(InscryptionTestBase):
+    options = {
+        "act2_randomize_bridge": 2,
+        "act_unlocks": 0,
+    }
+
+    def test_beating_act_2_needs_the_bridge_from_the_left(self) -> None:
+        self.assertAccessDependency(
+            ["Act 3 - Boss Photographer", "Act 2 - Boss Leshy", "Act 2 - Boss Grimora"],
+            [["Act 2 Bridge Repair"]],
+            only_check_listed=True
+        )
