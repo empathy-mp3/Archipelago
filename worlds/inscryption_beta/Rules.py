@@ -139,10 +139,10 @@ class InscryptionRules:
             "Act 3 - Bone Lord Room": self.has_bone_lord_room_requirements,
             # Each file node carries ActiveIfStoryFlag(FileAccessGiven), and the only thing that
             # sets that flag is the Archivist's own file-browse sequence, so all four need it.
-            "Act 3 - Luke's File Entry 1": self.has_luke_file_requirements(self.has_inspectometer_battery),
-            "Act 3 - Luke's File Entry 2": self.has_luke_file_requirements(self.has_act3_bridge_requirements),
-            "Act 3 - Luke's File Entry 3": self.has_luke_file_requirements(self.has_act3_bridge_requirements),
-            "Act 3 - Luke's File Entry 4": self.has_luke_file_requirements(self.has_gaudy_gem_land_requirements),
+            "Act 3 - Luke's File Entry 1": self.has_forest_file_requirements,
+            "Act 3 - Luke's File Entry 2": self.has_bridge_file_requirements,
+            "Act 3 - Luke's File Entry 3": self.has_bridge_file_requirements,
+            "Act 3 - Luke's File Entry 4": self.has_tower_file_requirements,
             "Act 3 - Well": self.has_filthy_corpse_world_requirements,
             "Act 3 - Gems Drone": self.has_act3_bridge_requirements,
             "Act 3 - Clock": self.has_ourobot_requirements,  # Can be brute-forced, but the solution needs those items.
@@ -473,8 +473,16 @@ class InscryptionRules:
 
     # The file rooms themselves are ungated, but their node stays inactive until the Archivist has
     # asked to browse a file, so reaching the Archivist is a requirement on top of the area's own.
-    def has_luke_file_requirements(self, area: Callable[[CollectionState], bool]) -> Callable[[CollectionState], bool]:
-        return lambda state: area(state) and self.has_archivist_requirements(state)
+    # One per area rather than one factory: the three areas are three rules, and the tracker's
+    # sync check reads these by name to confirm the pack splits the four entries the same way.
+    def has_forest_file_requirements(self, state: CollectionState) -> bool:
+        return self.has_inspectometer_battery(state) and self.has_archivist_requirements(state)
+
+    def has_bridge_file_requirements(self, state: CollectionState) -> bool:
+        return self.has_act3_bridge_requirements(state) and self.has_archivist_requirements(state)
+
+    def has_tower_file_requirements(self, state: CollectionState) -> bool:
+        return self.has_gaudy_gem_land_requirements(state) and self.has_archivist_requirements(state)
 
     def has_gaudy_gem_land_requirements(self, state: CollectionState) -> bool:
         if self.act3_overhauled:
