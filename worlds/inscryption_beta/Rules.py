@@ -122,8 +122,8 @@ class InscryptionRules:
             "Act 3 - Boss Unfinished": self.has_gaudy_gem_land_requirements,
             "Act 3 - Boss G0lly": self.has_resplendent_bastion_requirements,
             "Act 3 - Extra Battery": self.has_act3_missable_check_requirements,  # Hard to miss but soft lock still possible.
-            "Act 3 - Nano Armor Generator": self.has_act3_purchase_requirements(2),  # $26, the dearer of the two.
-            "Act 3 - Shop Holo Pelt": self.has_act3_purchase_requirements(1),  # $22, so the affordable one first.
+            "Act 3 - Nano Armor Generator": self.has_act3_shop_requirements,  # Costs money, so can need multiple battles.
+            "Act 3 - Shop Holo Pelt": self.has_act3_shop_requirements,  # Costs money, so can need multiple battles.
             "Act 3 - Middle Holo Pelt": self.has_act3_missable_check_requirements,  # Can be reached without but possible soft lock
             "Act 3 - Forest Holo Pelt": self.has_inspectometer_battery,
             "Act 3 - Crypt Holo Pelt": self.has_filthy_corpse_world_requirements,
@@ -534,24 +534,18 @@ class InscryptionRules:
             return False
         return self.has_resplendent_bastion_requirements(state) and self.has_inspectometer_battery(state)
 
-    # Everything bought in Act 3 stands in a zone reached long before it can be afforded, so the
-    # price is the gate: one open zone per purchase the run has to pay for, and the dearer the
-    # purchase the more zones. The Bastion earns its place on the list through its battles, being
-    # the one zone with no free pickups of its own.
-    def has_act3_purchase_requirements(self, count: int) -> Callable[[CollectionState], bool]:
-        return lambda state: self.count_act3_areas_open(
+    def has_act3_shop_requirements(self, state: CollectionState) -> bool:
+        return self.count_act3_areas_open(
             state,
             self.has_resplendent_bastion_requirements,
             self.has_inspectometer_battery,
             self.has_filthy_corpse_world_requirements,
             self.has_gaudy_gem_land_requirements
-        ) >= count
+        ) >= 3
 
-    # The clock's last digit is on a wall in the Rickety Tower that only shows once the $25 Holo
-    # Brush is bought, so it wants Gaudy Gem Land on top of the money for a third purchase.
+
     def has_ourobot_requirements(self, state: CollectionState) -> bool:
-        return self.has_gaudy_gem_land_requirements(state) and \
-            self.has_act3_purchase_requirements(3)(state)
+        return self.has_gaudy_gem_land_requirements(state) and self.has_act3_shop_requirements(state)
 
     def has_act1_requirements(self, state: CollectionState) -> bool:
         if self.world.options.enable_act_1 and self.acts_unlocked_by_items:
